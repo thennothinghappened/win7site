@@ -5,12 +5,29 @@
 
 body {
 	font-family: "Segoe UI", sans-serif;
-    background-image: url('https://wallpapercave.com/wp/Wn3Dygb.jpg');
-    background-size:cover;
-	background-repeat: no-repeat;
-	min-height: 100vh;
-	margin: 0;
-  	perspective: 1000px;
+  background-image: url('https://wallpapercave.com/wp/Wn3Dygb.jpg');
+  background-size:cover;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  margin: 0;
+  perspective: 1000px;
+}
+
+#login {
+  opacity: 0;
+  animation: login_fadein 3s;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  background-image: url('https://img.wallpapersafari.com/desktop/1024/576/24/42/3LWMcO.jpg');
+  background-size: cover;
+  position: fixed;
+}
+
+@keyframes login_fadein {
+  0% {opacity: 100%}
+  80% {opacity: 100%}
+  100% {opacity: 0%}
 }
 
 .window {
@@ -25,6 +42,7 @@ body {
   background-image: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmsfn.org%2Fboard%2Fuploads%2Fpost-385423-0-61567900-1390053212.png&f=1&nofb=1&ipt=e7392349aba1b7dc1f73b7a71bd3d6dc2233a645567bc4d77a44631d223320c6&ipo=images');
   box-shadow: 0 0 12px 2px black;
   font-size: 15px;
+  display: none;
 }
 
 .pop_out {
@@ -120,9 +138,19 @@ ul {
   height: 20px;
   padding: 0;
   color: black;
-  border: 1.5px dotted black;
-  box-shadow: 0 0 0 2px #20b5cc;
   background: linear-gradient(0deg, rgba(169,209,233,1) 0%, rgba(196,230,245,1) 49%, rgba(238,245,251,1) 59%, rgba(248,252,255,1) 100%);
+}
+
+.dialogbutton:hover, .dialogbutton:focus {
+  box-shadow: 0 0 0 2px #20b5cc;
+}
+
+.dialogbutton:hover {
+  box-shadow: 0 0 0 2px #20b5cc;
+}
+
+.dialogbutton:focus {
+  border: 1.5px dotted black;
 }
 
 .windowbutton {
@@ -173,24 +201,34 @@ hr {
 
 </style>
 <script defer>
-// button close window
-function closeWindow(self) {
-	const ele = self.parentElement.parentElement;
-	ele.classList.remove('pop_out');
+  
+  const StartupSound = new Audio('https://archive.org/download/MicrosoftWindows7StartupSound/Microsoft%20Windows%207%20Startup%20Sound.ogg');
 
-	void ele.offsetWidth;
+  setTimeout(() => {
+    document.getElementById('login').style.display = 'none';
+    StartupSound.play();
+  }, 3000)
 
-	ele.classList.add('pop_out');
-	ele.classList.add('pop_in');
+  // button close window
+  function closeWindow(self) {
+    const ele = self.parentElement.parentElement;
+    ele.classList.remove('pop_out');
 
-	setTimeout(() => {
-		ele.style.display = "none";
-		ele.classList.remove('pop_in');
-	}, 150)
-}
-</script>			
+    void ele.offsetWidth;
+
+    ele.classList.add('pop_out');
+    ele.classList.add('pop_in');
+
+    setTimeout(() => {
+      ele.style.display = "none";
+      ele.classList.remove('pop_in');
+    }, 150)
+  }
+</script>
 </head>
 <body>
+
+  <div id="login"></div>
 
 	<button class="desktopicon" ondblclick="setWindowVisibility('window_text', true)">
 		<img src="https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png">

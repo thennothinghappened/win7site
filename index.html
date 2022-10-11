@@ -38,7 +38,7 @@
 		<span>About Windows</span>
 	</button>
   <button class="desktopicon" ondblclick="windowManager.windowFromTemplate('browser')">
-		<img src="https://pbs.twimg.com/profile_images/1116640019/windows-7-logo_400x400.png">
+		<img src="https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419">
 		<span>Internet Explorer</span>
 	</button>
 
@@ -76,7 +76,7 @@
       </div>
   </div>
   `, 500, 420, false);
-  windowManager.createWindowTemplate('notepad', 'Notepad', null, `
+  windowManager.createWindowTemplate('notepad', 'Notepad', 'https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png', `
   <textarea>
 This is a test text document...
 aaaaaa
@@ -89,9 +89,11 @@ aaaaaaa
   windowManager.createWindowTemplate('potatos_console', 'PotatOS Console', null, `
   <textarea></textarea>
   `, 400, 400, true);
-  windowManager.createWindowTemplate('browser', 'Web Browser', null, `
+  windowManager.createWindowTemplate('browser', 'Internet Explorer', 'https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419', `
+  <div>
   <input type="text" name="url" class="url">
-  <input type="button" value="Go" onclick="this.parentElement.getElementsByClassName('browserWindow')[0].src = addHttpProtocol(this.parentElement.getElementsByClassName('url')[0].value)">
+  <input type="button" value="Go" onclick="this.parentElement.parentElement.getElementsByClassName('browserWindow')[0].src = addHttpProtocol(this.parentElement.parentElement.getElementsByClassName('url')[0].value)">
+  </div>
   <iframe class="browserWindow" src="https://bing.com"></iframe>
   `, 800, 500)
 

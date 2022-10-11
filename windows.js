@@ -1,21 +1,26 @@
+function random_range(min, max) {
+    const maximum = max - min;
+    return Math.floor(Math.random() * maximum) + min;
+}
 
 // Window
 class Window {
 
-    constructor(windowName, windowTitle, windowIcon=null, contents, width=300, height=200, canResize=true) {
+    constructor(windowName, windowTitle, windowIcon=null, contents, width=300, height=200, canResize=true, zPos, initFunction) {
 
         this.windowTitle = windowTitle;
         this.windowIcon = windowIcon;
         this.width = width;
         this.height = height;
+        this.zPos = zPos;
         
         // Create window in DOM //
 
         // base window
         this.window = document.createElement('div');
         this.window.classList.add('window', 'pop_out', windowName);
-        this.window.style.top = '30vh';
-        this.window.style.left = '40vh';
+        this.window.style.top = random_range(10, 40) + 'vh';
+        this.window.style.left = random_range(20, 40) + 'vw';
 
         // window -> titlebar
         this.window_titlebar = document.createElement('div');
@@ -60,6 +65,8 @@ class Window {
 
         // Make draggable
         this.window_titlebar.onmousedown = this.startDragWindow;
+
+        initFunction(this);
 
         // Insert the window
         document.body.appendChild(this.window);
@@ -113,6 +120,7 @@ class Window {
 
         setTimeout(() => {
             this.window.remove();
+            windowManager.removeWindow(this.zPos);
         }, 150);
     }
 }
@@ -122,10 +130,11 @@ class WindowManager {
 
     constructor() {
         this.windowTemplates = {};
-        this.windowIndex = 0;
+        this.windowIndex = [];
+        this.windowIndexStart = 100;
     }
 
-    createWindowTemplate = (windowName, windowTitle, windowIcon=null, contents, width, height, canResize) => {
+    createWindowTemplate = async (windowName, windowTitle, windowIcon=null, contents, width, height, canResize) => {
 
         this.windowTemplates[windowName] = {
             windowTitle: windowTitle,
@@ -137,14 +146,33 @@ class WindowManager {
         };
     }
 
-    windowFromTemplate = (windowName) => {
+    windowFromTemplate = async (windowName, initFunction=()=>{}) => {
         const window = this.windowTemplates[windowName];
         if (window === null) {
             console.error(`Attempted to create a null window with name ${windowName}`);
             return;
         }
 
-        new Window(windowName, window.windowTitle, window.windowIcon, window.contents, window.width, window.height, window.canResize, this.windowIndex);
+        const win = new Window(windowName, window.windowTitle, window.windowIcon, window.contents, window.width, window.height, window.canResize, this.windowIndex, initFunction);
+        this.windowIndex.push(win);
+        this.refreshWindowOrder();
+    }
+
+    refreshWindowOrder = () => {
+        this.windowIndex.forEach((w, i) => {
+            w.window.style.zIndex = this.windowIndexStart + i;
+        });
+
+        setTimeout(() => this.windowIndex[this.windowIndex.length - 1].window.focus(), 20);
+    };
+
+    removeWindow = (id) => {
+        this.windowIndex.slice(id, id);
+        //this.refreshWindowOrder();
+    }
+
+    createDesktopIcon = () => {
+        
     }
 
 }
@@ -157,7 +185,10 @@ document.addEventListener('click', (e) => {
     if (e.target.tagName === 'A') {
         e.preventDefault();
         
-        windowManager.windowFromTemplate('browser');
+        windowManager.windowFromTemplate('browser', w => {
+            w.window.getElementsByClassName('url')[0].value = e.target.href;
+            w.window.getElementsByClassName('browserWindow')[0].src = e.target.href;
+        });
     }
 });
 

@@ -59,8 +59,7 @@ body {
 	0% {transform: scale(0.9) rotateX(5deg)}
 }
 
-.window:focus-within, .window:focus {
-	z-index: 15;
+.window:focus-within {
     box-shadow: 0 0 12px 2px black;
 }
 
@@ -75,7 +74,7 @@ body {
 }
 
 .windowtitle>span {
-	text-shadow: 0 0 10px white,0 0 10px white,0 0 10px white,0 0 10px white;
+	text-shadow: 0 0 10px white,0 0 10px white,0 0 10px white,0 0 10px white, 0 0 10px white,0 0 10px white,0 0 10px white;
     vertical-align: middle;
     margin-top: 5px;
     display: inline-block;

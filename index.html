@@ -1,346 +1,100 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style>
+  <link rel="stylesheet" href="win7.css">
+  <script src="windows.js"></script>
+  <script>
+    // Load
+    const StartupSound = new Audio('https://archive.org/download/MicrosoftWindows7StartupSound/Microsoft%20Windows%207%20Startup%20Sound.ogg');
+    
+    window.addEventListener('load', () => {
+      const loginElement = document.getElementById('login');
+      loginElement.style.animationName = 'login_fadein'
+      StartupSound.play();
 
-body {
-	font-family: "Segoe UI", sans-serif;
-  background-image: url('https://wallpapercave.com/wp/Wn3Dygb.jpg');
-  background-size:cover;
-  background-repeat: no-repeat;
-  min-height: 100vh;
-  margin: 0;
-  perspective: 1000px;
-}
+      setTimeout(() => {
+        loginElement.style.display = 'none';
+      }, 1000)
+    });
 
-#login {
-  opacity: 0;
-  animation: login_fadein 3s;
-  width: 100vw;
-  height: 100vh;
-  z-index: 10000;
-  background-image: url('https://img.wallpapersafari.com/desktop/1024/576/24/42/3LWMcO.jpg');
-  background-size: cover;
-  position: fixed;
-}
-
-@keyframes login_fadein {
-  0% {opacity: 100%}
-  80% {opacity: 100%}
-  100% {opacity: 0%}
-}
-
-.window {
-  position: absolute;
-  z-index: 9;
-  background-color: rgba(0,0,0,0);
-  border: 1px solid black;
-  backdrop-filter: blur(8px);
-  border-radius: 10px;
-  padding: 0 5px 5px 5px;
-  background-color: rgba(153, 220, 253, 0.2);
-  background-image: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmsfn.org%2Fboard%2Fuploads%2Fpost-385423-0-61567900-1390053212.png&f=1&nofb=1&ipt=e7392349aba1b7dc1f73b7a71bd3d6dc2233a645567bc4d77a44631d223320c6&ipo=images');
-  box-shadow: 0 0 12px 2px black;
-  font-size: 15px;
-  display: none;
-}
-
-.pop_out {
-  animation: pop_out 0.15s;
-}
-
-.pop_in {
-	animation-direction: reverse;
-}
-
-@keyframes pop_out {
-	0% {transform: scale(0.9) rotateX(5deg)}
-}
-
-.window:focus-within {
-	z-index: 10;
-}
-
-.windowtitle {
-  padding: 0 2px 5px 5px;
-  z-index: 10;
-  color: #fff;
-  text-align: left;
-  border-radius: 10px 10px 0 0;
-  color: black;
-  user-select: none;
-}
-
-.windowtitle>span {
-	text-shadow: 0 0 10px white,0 0 10px white,0 0 10px white,0 0 10px white;
-    vertical-align: middle;
-    margin-top: 5px;
-    display: inline-block;
-}
-
-.windowtitle img {
-	height: 25px;
-	float:left;
-	padding-right: 5px;
-}
-
-button {
-  transition: 0.15s ease;
-  border-radius: 3px;
-}
-
-a {
-  color: #2075ac;
-}
-
-ul {
-  list-style-type: none;
-  margin-left: 15px;
-}
-
-.dialog {
-  text-align: right;
-}
-
-.desktopicon {
-	background: none;
-	border: 1px solid rgba(0,0,0,0);
-	border-radius: 2px;
-	margin: 20px;
-	transition: none;
-}
-
-.desktopicon:hover {
-	border: 1px solid rgba(230, 250, 255, 0.6);
-	background-color: rgba(200, 220, 255, 0.5);
-}
-
-.desktopicon:focus {
-	border: 1px solid rgba(230, 250, 255, 0.6);
-	background-color: rgba(200, 220, 255, 0.7);
-	box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.desktopicon img {
-	width: 70px;
-}
-
-.desktopicon span {
-	display: block;
-	color: white;
-	font-weight: 400;
-	text-shadow: 0 2px 4px black, 0 2px 4px black, 0 2px 4px black;
-	font-size: 15px;
-}
-
-.dialogbutton {
-  width: 83px;
-  height: 20px;
-  padding: 0;
-  color: black;
-  background: linear-gradient(0deg, rgba(169,209,233,1) 0%, rgba(196,230,245,1) 49%, rgba(238,245,251,1) 59%, rgba(248,252,255,1) 100%);
-}
-
-.dialogbutton:hover, .dialogbutton:focus {
-  box-shadow: 0 0 0 2px #20b5cc;
-}
-
-.dialogbutton:hover {
-  box-shadow: 0 0 0 2px #20b5cc;
-}
-
-.dialogbutton:focus {
-  border: 1.5px dotted black;
-}
-
-.windowbutton {
-  float: right;
-  margin: 0;
-  border: 1px solid black;
-  box-shadow: 0 1px 0 white;
-  width: 56px;
-  height: 22px;
-  padding: 0;
-  color: white;
-  text-shadow: 0 0 2px black;
-  font-weight: 1000;
-  border-radius: 0 0 5px 5px;
-}
-
-.windowmain {
-  width: 500px;
-  min-height: 100px;
-  min-width:175px;
-  border: 2px solid grey;
-  background-color: white;
-  padding: 15px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-#window_about p {
-	padding-left: 40px;
-    padding-right: 40px;
-}
-
-.windowmain img {
-	max-width: 100%;
-}
-
-.closebutton {
-  background:linear-gradient(0deg, rgba(222,135,107,1) 0%, rgba(201,60,15,1) 15%, rgba(180,87,58,1) 49%, rgba(228,133,119,1) 59%, rgba(238,170,161,1) 78%, rgba(254,229,226,1) 100%),radial-gradient(circle, rgba(254,229,226,0.34495805158000703) 0%, rgba(238,170,161,0.3841737378545168) 34%, rgba(180,87,58,0.38137261740633754) 95%);
-}
-
-.closebutton:hover {
-  background: #f55;
-}
-
-hr {
-	color: lightgrey;
-}
-
-</style>
-<script defer>
-  
-  const StartupSound = new Audio('https://archive.org/download/MicrosoftWindows7StartupSound/Microsoft%20Windows%207%20Startup%20Sound.ogg');
-
-  setTimeout(() => {
-    document.getElementById('login').style.display = 'none';
-    StartupSound.play();
-  }, 3000)
-
-  // button close window
-  function closeWindow(self) {
-    const ele = self.parentElement.parentElement;
-    ele.classList.remove('pop_out');
-
-    void ele.offsetWidth;
-
-    ele.classList.add('pop_out');
-    ele.classList.add('pop_in');
-
-    setTimeout(() => {
-      ele.style.display = "none";
-      ele.classList.remove('pop_in');
-    }, 150)
-  }
-</script>
+    
+  </script>
 </head>
 <body>
 
-  <div id="login"></div>
+  <div id="login">
+    <div>
+      <img src="https://uploads.scratch.mit.edu/users/avatars/27483613.png" width="40">
+      Welcome
+    </div>
+  </div>
 
-	<button class="desktopicon" ondblclick="setWindowVisibility('window_text', true)">
+	<button class="desktopicon" ondblclick="windowManager.windowFromTemplate('notepad')">
 		<img src="https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png">
 		<span>Notepad</span>
 	</button>
-	<button class="desktopicon" ondblclick="setWindowVisibility('window_about', true)">
+	<button class="desktopicon" ondblclick="windowManager.windowFromTemplate('about_windows')">
 		<img src="https://pbs.twimg.com/profile_images/1116640019/windows-7-logo_400x400.png">
 		<span>About Windows</span>
 	</button>
+  <button class="desktopicon" ondblclick="windowManager.windowFromTemplate('browser')">
+		<img src="https://pbs.twimg.com/profile_images/1116640019/windows-7-logo_400x400.png">
+		<span>Internet Explorer</span>
+	</button>
 
-<div id="window_text" class="window pop_out" style="top: 10vh; left: 27vw">
-  <div id="window_text_header" class="windowtitle">
-	  <span><img src="https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png"> Notepad</span>
-    <button onclick="closeWindow(this);" class="windowbutton closebutton">X</button>
+<script defer>
+  const windowManager = new WindowManager();
+  windowManager.createWindowTemplate('about_windows', 'About Windows', null, `
+  <div style="padding: 15px;">
+      <p style="text-align: center;">
+        <img src="http://pngimg.com/uploads/windows_logos/windows_logos_PNG1.png" style="width:65%">
+          <span style="font-size: 30px">Ultimate</span>
+      </p>
+      <br>
+      <hr>
+      <p>
+        Microsoft Windows
+          <br>
+          Version 6.1 (Build 7600)
+          <br>
+          Copyright (c) 2009 Microsoft Corporation. All rights reserved.
+          <br>
+          The Windows 7 Ultimate operating system and its user interface are protected by trademark and other pending or existing intellectual property rights in the United States and other countries.
+      </p>
+      <br>
+      <p>
+        This product is licensed under the <a href="http://docs.google.com/gview?url=https://download.microsoft.com/Documents/UseTerms/Windows%207_Ultimate_English_1e53a4ca-c632-4776-90ce-70f027918132.pdf&embedded=true">Microsoft Software License
+        <br>
+        Terms</a> to:
+        <ul>
+          <li>thennothinghappened :p</li>
+        </ul>
+      </p>
+      <br>
+      <div class="dialog">
+        <button class="dialogbutton">OK</button>
+      </div>
   </div>
-  <textarea class="windowmain">
+  `, 500, 420, false);
+  windowManager.createWindowTemplate('notepad', 'Notepad', null, `
+  <textarea>
 This is a test text document...
 aaaaaa
 aaa
 a
 aa
 aaaaaaa
-</textarea>
-</div>
+  </textarea>
+  `, 450, 300, true);
+  windowManager.createWindowTemplate('potatos_console', 'PotatOS Console', null, `
+  <textarea></textarea>
+  `, 400, 400, true);
+  windowManager.createWindowTemplate('browser', 'Web Browser', null, `
+  <input type="text" name="url" class="url">
+  <input type="button" value="Go" onclick="this.parentElement.getElementsByClassName('browserWindow')[0].src = addHttpProtocol(this.parentElement.getElementsByClassName('url')[0].value)">
+  <iframe class="browserWindow" src="https://bing.com"></iframe>
+  `, 800, 500)
 
-<div id="window_about" class="window pop_out" style="top: 30vh; left: 55vw;">
-  <div id="window_about_header" class="windowtitle">
-    <span>About Windows</span>
-    <button onclick="closeWindow(this);" class="windowbutton closebutton">X</button>
-  </div>
-  <div class="windowmain">
-  	<p style="text-align: center;">
-  		<img src="http://pngimg.com/uploads/windows_logos/windows_logos_PNG1.png" style="width:65%">
-        <span style="font-size: 30px">Ultimate</span>
-    </p>
-    <br>
-  	<hr>
-    <p>
-    	Microsoft Windows
-        <br>
-        Version 6.1 (Build 7600)
-        <br>
-        Copyright (c) 2009 Microsoft Corporation. All rights reserved.
-        <br>
-        The Windows 7 Ultimate operating system and its user interface are protected by trademark and other pending or existing intellectual property rights in the United States and other countries.
-    </p>
-    <br>
-    <p>
-    	This product is licensed under the <a href="aaa">Microsoft Software License
-    	<br>
-    	Terms</a> to:
-    	<ul>
-    		<li>thennothinghappened :p</li>
-    	</ul>
-    </p>
-    <br>
-    <div class="dialog">
-    	<button class="dialogbutton">OK</button>
-    </div>
-  </div>
-</div>
-
-<script>
-
-dragElement(document.getElementById("window_text"));
-dragElement(document.getElementById("window_about"));
-
-// Toggle window visibility
-function setWindowVisibility(windowName, windowVisible) {
-	document.getElementById(windowName).style.display = (windowVisible ? 'block' : 'none');
-}
-
-function dragElement(elmnt) {
-  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  if (document.getElementById(elmnt.id + "_header")) {
-    /* if present, the header is where you move the DIV from:*/
-    document.getElementById(elmnt.id + "_header").onmousedown = dragMouseDown;
-  } else {
-    /* otherwise, move the DIV from anywhere inside the DIV:*/
-    elmnt.onmousedown = dragMouseDown;
-  }
-
-  function dragMouseDown(e) {
-    e = e || window.event;
-    e.preventDefault();
-    // get the mouse cursor position at startup:
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    // call a function whenever the cursor moves:
-    document.onmousemove = elementDrag;
-  }
-
-  function elementDrag(e) {
-    e = e || window.event;
-    e.preventDefault();
-    // calculate the new cursor position:
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    // set the element's new position:
-    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-  }
-
-  function closeDragElement() {
-    /* stop moving when mouse button is released:*/
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
-}
 </script>
 
 </body>

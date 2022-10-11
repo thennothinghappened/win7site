@@ -42,9 +42,12 @@ body {
   border-radius: 10px;
   padding: 0 5px 5px 5px;
   background-color: rgba(153, 220, 253, 0.2);
-  background-image: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmsfn.org%2Fboard%2Fuploads%2Fpost-385423-0-61567900-1390053212.png&f=1&nofb=1&ipt=e7392349aba1b7dc1f73b7a71bd3d6dc2233a645567bc4d77a44631d223320c6&ipo=images');
   font-size: 15px;
   display: none;
+}
+
+.window.focuswindow {
+  background-image: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmsfn.org%2Fboard%2Fuploads%2Fpost-385423-0-61567900-1390053212.png&f=1&nofb=1&ipt=e7392349aba1b7dc1f73b7a71bd3d6dc2233a645567bc4d77a44631d223320c6&ipo=images');
 }
 
 .pop_out {

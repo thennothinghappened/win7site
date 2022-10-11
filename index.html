@@ -24,7 +24,7 @@
 
   <div id="login">
     <div>
-      <img src="https://uploads.scratch.mit.edu/users/avatars/27483613.png" width="40">
+      <img src="http://www.rw-designer.com/cursor-view/14456.png" width="80" style="object-fit: none">
       Welcome
     </div>
   </div>
@@ -92,9 +92,9 @@ aaaaaaa
   windowManager.createWindowTemplate('browser', 'Internet Explorer', 'https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419', `
   <div>
   <input type="text" name="url" class="url">
-  <input type="button" value="Go" onclick="this.parentElement.parentElement.getElementsByClassName('browserWindow')[0].src = addHttpProtocol(this.parentElement.parentElement.getElementsByClassName('url')[0].value)">
+  <input type="button" value="Go" onclick="const url = this.parentElement.parentElement.getElementsByClassName('url')[0].value;const frame = this.parentElement.parentElement.getElementsByClassName('browserWindow')[0]; frame.src = browserUrl(url); frame.removeAttribute('srcdoc')">
   </div>
-  <iframe class="browserWindow" src="https://bing.com"></iframe>
+  <iframe class="browserWindow" src="https://google.com?igu=1" frameborder="0"></iframe>
   `, 800, 500)
 
 </script>

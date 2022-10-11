@@ -81,7 +81,7 @@ class Window {
         this.pos4=0;
 
         e = e || window.event;
-        e.preventDefault();
+        //e.preventDefault();
 
         // get the mouse cursor position at startup:
         this.pos3 = e.clientX;
@@ -89,6 +89,7 @@ class Window {
         document.onmouseup = this.stopDragWindow;
         // call a function whenever the cursor moves:
         document.onmousemove = this.dragWindow;
+        windowManager.bringWindowToFront(this.zPos);
     }
 
     stopDragWindow = () => {
@@ -118,9 +119,10 @@ class Window {
         void this.window.offsetWidth;
         this.window.classList.add('pop_out', 'pop_in');
 
+        windowManager.removeWindow(this.zPos);
+
         setTimeout(() => {
             this.window.remove();
-            windowManager.removeWindow(this.zPos);
         }, 150);
     }
 }
@@ -153,22 +155,39 @@ class WindowManager {
             return;
         }
 
-        const win = new Window(windowName, window.windowTitle, window.windowIcon, window.contents, window.width, window.height, window.canResize, this.windowIndex, initFunction);
+        const win = new Window(windowName, window.windowTitle, window.windowIcon, window.contents, window.width, window.height, window.canResize, this.windowIndex.length, initFunction);
         this.windowIndex.push(win);
         this.refreshWindowOrder();
     }
 
     refreshWindowOrder = () => {
         this.windowIndex.forEach((w, i) => {
-            w.window.style.zIndex = this.windowIndexStart + i;
+            const index = this.windowIndexStart + i;
+            w.zPos = i;
+            w.window.style.zIndex = index;
         });
 
-        setTimeout(() => this.windowIndex[this.windowIndex.length - 1].window.focus(), 20);
+        console.table(this.windowIndex)
+
+        // Focus class to top window
+        if (this.windowIndex.length !== 0) {
+            this.windowIndex[this.windowIndex.length-1].window.classList.add('focuswindow')
+            
+            // Unfocus prev focussed element
+            if (this.windowIndex.length !== 1) {
+                this.windowIndex[this.windowIndex.length-2].window.classList.remove('focuswindow');
+            }
+        }
     };
 
+    bringWindowToFront = (id) => {
+        this.windowIndex.push(this.windowIndex.splice(id, 1)[0]);
+        this.refreshWindowOrder();
+    }
+
     removeWindow = (id) => {
-        this.windowIndex.slice(id, id);
-        //this.refreshWindowOrder();
+        this.windowIndex.splice(id, 1);
+        this.refreshWindowOrder();
     }
 
     createDesktopIcon = () => {
@@ -192,9 +211,23 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Override right click menu
+document.addEventListener('contextmenu', (e) => {
+    e.preventDefault()
+});
+
 function addHttpProtocol(string) {
     if (!string.startsWith('http://') && !string.startsWith('https://')) {
       return 'http://' + string;
     }
+    return string;
+}
+
+function browserUrl(string) {
+    string = addHttpProtocol(string);
+    if (string.indexOf('google.co') !== -1 && string.indexOf('igu=1') === -1) {
+        string += '?igu=1'
+    }
+
     return string;
 }

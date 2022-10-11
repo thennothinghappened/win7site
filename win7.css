@@ -59,8 +59,8 @@ body {
 	0% {transform: scale(0.9) rotateX(5deg)}
 }
 
-.window:focus-within {
-    box-shadow: 0 0 12px 2px black;
+.focuswindow {
+  box-shadow: 0 0 12px 2px black;
 }
 
 .windowtitle {
@@ -74,7 +74,7 @@ body {
 }
 
 .windowtitle>span {
-	text-shadow: 0 0 10px white,0 0 10px white,0 0 10px white,0 0 10px white, 0 0 10px white,0 0 10px white,0 0 10px white;
+	text-shadow: 0 0 10px white,0 0 10px white,0 0 10px white,0 0 10px white, 0 0 10px white;
     vertical-align: middle;
     margin-top: 5px;
     display: inline-block;
@@ -159,7 +159,8 @@ ul {
   float: right;
   margin: 0;
   border: 1px solid black;
-  box-shadow: 0 1px 0 white;
+  border-top: none;
+  box-shadow: 0 1px 2px white;
   width: 56px;
   height: 22px;
   padding: 0;
@@ -167,6 +168,10 @@ ul {
   text-shadow: 0 0 2px black;
   font-weight: 1000;
   border-radius: 0 0 5px 5px;
+}
+
+.focuswindow .windowbutton {
+  box-shadow: 0 1px 0 white;
 }
 
 .windowmain {
@@ -203,10 +208,14 @@ ul {
 }
 
 .closebutton {
+  background: none;
+}
+
+.focuswindow .closebutton {
   background:linear-gradient(0deg, rgba(222,135,107,1) 0%, rgba(201,60,15,1) 15%, rgba(180,87,58,1) 49%, rgba(228,133,119,1) 59%, rgba(238,170,161,1) 78%, rgba(254,229,226,1) 100%),radial-gradient(circle, rgba(254,229,226,0.34495805158000703) 0%, rgba(238,170,161,0.3841737378545168) 34%, rgba(180,87,58,0.38137261740633754) 95%);
 }
 
-.closebutton:hover {
+.focuswindow .closebutton:hover {
   box-shadow: 0 0 6px 3px #f66;
 }
 

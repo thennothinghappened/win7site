@@ -26,78 +26,22 @@
     <div>
       <img src="http://www.rw-designer.com/cursor-view/14456.png" width="80" style="object-fit: none">
       Welcome
+      <noscript><p>Hey, it looks like you don't have javascript. This site completely relies on it, so it won't be able to run!</p></noscript>
     </div>
   </div>
 
-	<button class="desktopicon" ondblclick="windowManager.windowFromTemplate('notepad')">
+	<button class="desktopicon" ondblclick="windowManager.createWindow(NotepadWindow, {data: {filename: '', text: ''}})">
 		<img src="https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png">
 		<span>Notepad</span>
 	</button>
-	<button class="desktopicon" ondblclick="windowManager.windowFromTemplate('about_windows')">
+	<button class="desktopicon" ondblclick="windowManager.createWindow(AboutWindow)">
 		<img src="https://pbs.twimg.com/profile_images/1116640019/windows-7-logo_400x400.png">
 		<span>About Windows</span>
 	</button>
-  <button class="desktopicon" ondblclick="windowManager.windowFromTemplate('browser')">
+  <button class="desktopicon" ondblclick="windowManager.createWindow(IEWindow, {})">
 		<img src="https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419">
 		<span>Internet Explorer</span>
 	</button>
-
-<script defer>
-  const windowManager = new WindowManager();
-  windowManager.createWindowTemplate('about_windows', 'About Windows', null, `
-  <div style="padding: 15px;">
-      <p style="text-align: center;">
-        <img src="http://pngimg.com/uploads/windows_logos/windows_logos_PNG1.png" style="width:65%">
-          <span style="font-size: 30px">Ultimate</span>
-      </p>
-      <br>
-      <hr>
-      <p>
-        Microsoft Windows
-          <br>
-          Version 6.1 (Build 7600)
-          <br>
-          Copyright (c) 2009 Microsoft Corporation. All rights reserved.
-          <br>
-          The Windows 7 Ultimate operating system and its user interface are protected by trademark and other pending or existing intellectual property rights in the United States and other countries.
-      </p>
-      <br>
-      <p>
-        This product is licensed under the <a href="http://docs.google.com/gview?url=https://download.microsoft.com/Documents/UseTerms/Windows%207_Ultimate_English_1e53a4ca-c632-4776-90ce-70f027918132.pdf&embedded=true">Microsoft Software License
-        <br>
-        Terms</a> to:
-        <ul>
-          <li>thennothinghappened :p</li>
-        </ul>
-      </p>
-      <br>
-      <div class="dialog">
-        <button class="dialogbutton">OK</button>
-      </div>
-  </div>
-  `, 500, 420, false);
-  windowManager.createWindowTemplate('notepad', 'Notepad', 'https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png', `
-  <textarea>
-This is a test text document...
-aaaaaa
-aaa
-a
-aa
-aaaaaaa
-  </textarea>
-  `, 450, 300, true);
-  windowManager.createWindowTemplate('potatos_console', 'PotatOS Console', null, `
-  <textarea></textarea>
-  `, 400, 400, true);
-  windowManager.createWindowTemplate('browser', 'Internet Explorer', 'https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419', `
-  <div>
-  <input type="text" name="url" class="url">
-  <input type="button" value="Go" onclick="const url = this.parentElement.parentElement.getElementsByClassName('url')[0].value;const frame = this.parentElement.parentElement.getElementsByClassName('browserWindow')[0]; frame.src = browserUrl(url); frame.removeAttribute('srcdoc')">
-  </div>
-  <iframe class="browserWindow" src="https://google.com?igu=1" frameborder="0"></iframe>
-  `, 800, 500)
-
-</script>
 
 </body>
 </html>

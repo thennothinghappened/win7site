@@ -10,6 +10,10 @@ body {
   perspective: 1000px;
 }
 
+.center_text {
+  text-align: center;
+}
+
 #login {
   animation-duration: 1s;
   width: 100vw;
@@ -144,10 +148,12 @@ ul {
   padding: 0;
   color: black;
   background: linear-gradient(0deg, rgba(169,209,233,1) 0%, rgba(196,230,245,1) 49%, rgba(238,245,251,1) 59%, rgba(248,252,255,1) 100%);
+  
 }
 
 .dialogbutton:hover, .dialogbutton:focus {
   box-shadow: 0 0 0 2px #20b5cc;
+  box-sizing: border-box;
 }
 
 .dialogbutton:hover {
@@ -191,21 +197,6 @@ ul {
   overflow: scroll;
 }
 
-.windowmain iframe, .windowmain textarea {
-    width: 100%;
-    min-width: inherit;
-    min-height: inherit;
-}
-
-.browser .windowmain {
-    display: grid;
-}
-
-#window_about p {
-	padding-left: 40px;
-    padding-right: 40px;
-}
-
 .windowmain img {
 	max-width: 100%;
 }
@@ -224,4 +215,46 @@ ul {
 
 hr {
 	color: lightgrey;
+}
+
+/* Window Type Specific */
+
+.window_about > .windowmain > div {
+  padding: 15px;
+}
+
+.window_about img {
+  width: 65%;
+}
+
+.window_about .window_about_edition {
+  font-size: 30px;
+}
+
+.window_about p {
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+.windowmain iframe, .windowmain textarea {
+  width: 100%;
+  min-width: inherit;
+  height: inherit;
+}
+
+.window_browser .windowmain {
+  display: grid;
+}
+
+.window_browser_urlbox {
+  width: 80%;
+}
+
+.window_browser_spinner {
+  background-image: url('http://www.rw-designer.com/cursor-view/14456.png');
+  background-position: center;
+  background-size:170%;
+  height: 25px;
+  width: 25px;
+  float: right;
 }

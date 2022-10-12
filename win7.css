@@ -219,6 +219,12 @@ hr {
 
 /* Window Type Specific */
 
+.windowmain textarea {
+  width: 100%;
+  min-width: inherit;
+  min-height: inherit;
+}
+
 .window_about > .windowmain > div {
   padding: 15px;
 }
@@ -236,14 +242,8 @@ hr {
   padding-right: 40px;
 }
 
-.windowmain iframe, .windowmain textarea {
-  width: 100%;
-  min-width: inherit;
-  height: inherit;
-}
-
 .window_browser .windowmain {
-  display: grid;
+  flex-direction: column;
 }
 
 .window_browser_urlbox {
@@ -257,4 +257,8 @@ hr {
   height: 25px;
   width: 25px;
   float: right;
+}
+
+.window_browser iframe {
+  flex-grow: 1;
 }

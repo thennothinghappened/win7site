@@ -314,6 +314,7 @@ hr {
   flex-grow: 1;
   border: none;
   border: var(--window-border);
+  background-color: white;
 }
 
 .not_responding {

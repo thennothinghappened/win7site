@@ -5,21 +5,20 @@ class Window {
     #pos2;
     #pos3;
     #pos4;
-    #resizeX;
-    #resizeY;
-    #w;
-    #h;
-    #decorationWidth;
-    #decorationHeight;
+    resizeX;
+    resizeY;
+    w;
+    h;
+    decorationWidth;
+    decorationHeight;
 
-    constructor(windowName, windowTitle, windowIcon=null, width, height, canResize, zPos) {
+    constructor(windowName, windowTitle, windowIcon=null, width, height, zPos) {
 
         this.windowTitle = windowTitle;
         this.windowIcon = windowIcon;
         this.width = width;
         this.height = height;
         this.zPos = zPos;
-        this.resizable = canResize;
         this.maximised = false;
         
         // Create window in DOM //
@@ -59,15 +58,6 @@ class Window {
         this.window_titlebar_buttons.classList.add('windowbuttoncontainer');
         this.window_titlebar.appendChild(this.window_titlebar_buttons);
 
-        if (canResize) {
-            // window -> titlebar -> button container -> fullscreen button
-            this.window_title_maximisebutton = document.createElement('button');
-            this.window_title_maximisebutton.classList.add('windowbutton');
-            this.window_title_maximisebutton.textContent = 'o';
-            this.window_title_maximisebutton.addEventListener('click', this.toggleMaximiseWindow);
-            this.window_titlebar_buttons.appendChild(this.window_title_maximisebutton);
-        }
-
         // window -> titlebar -> button container -> close button
         this.window_title_closebutton = document.createElement('button');
         this.window_title_closebutton.classList.add('windowbutton', 'closebutton');
@@ -84,23 +74,12 @@ class Window {
         // Make draggable
         this.window_titlebar.onmousedown = this.#startDragWindow;
 
-        // double click to maximise
-        if (canResize)
-            this.window_titlebar.ondblclick = this.toggleMaximiseWindow;
-
         // Make focusable
         this.window.onmousedown = this.makeFocus;
 
-        // Make resizable
+        // Set size
         this.window_contents.style.width = `${width}px`;
         this.window_contents.style.height = `${height}px`;
-        if (canResize) {
-            const resizerBr = document.createElement('div');
-            resizerBr.classList.add('resizer', 'resizer_br');
-            resizerBr.onmousedown = this.#startResizeWindow;
-
-            this.window.appendChild(resizerBr);
-        }
 
         // Insert the window
         document.body.appendChild(this.window);
@@ -108,55 +87,21 @@ class Window {
         this.window.focus();
 
         // Get decoration size for resizing!
-        this.#decorationWidth = this.window.clientWidth - this.window_contents.clientWidth;
-        this.#decorationHeight = this.window.clientHeight - this.window_contents.clientHeight;
+        this.decorationWidth = this.window.clientWidth - this.window_contents.clientWidth;
+        this.decorationHeight = this.window.clientHeight - this.window_contents.clientHeight;
     }
 
-    #resetPositions = () => {
+    resetPositions = () => {
         this.#pos1=0;
         this.#pos2=0;
         this.#pos3=0;
         this.#pos4=0;
-        this.#resizeX=0;
-        this.#resizeY=0;
-    }
-
-    // https://htmldom.dev/make-a-resizable-element/ thanks!
-    #startResizeWindow = (e) => {
-        this.#resetPositions();
-
-        this.#resizeX = e.clientX;
-        this.#resizeY = e.clientY;
-
-         // Calculate the dimension of element
-        this.#w = this.window.clientWidth - this.#decorationWidth;
-        this.#h = this.window.clientHeight - this.#decorationHeight;
-
-        // Attach the listeners to `document`
-        document.addEventListener('mousemove', this.#resizeMouseMoveHandler);
-        document.addEventListener('mouseup', this.#resizeMouseUpHandler);
-    }
-
-    #resizeMouseMoveHandler = (e) => {
-        // How far the mouse has been moved
-        const dx = e.clientX - this.#resizeX;
-        const dy = e.clientY - this.#resizeY;
-        this.width = this.#w + dx;
-        this.height = this.#h + dy;
-
-        // Adjust the dimension of element
-        this.window_contents.style.width = `${this.width}px`;
-        this.window_contents.style.height = `${this.height}px`;
-    }
-
-    #resizeMouseUpHandler = () => {
-        // Remove the handlers of `mousemove` and `mouseup`
-        document.removeEventListener('mousemove', this.#resizeMouseMoveHandler);
-        document.removeEventListener('mouseup', this.#resizeMouseUpHandler);
+        this.resizeX=0;
+        this.resizeY=0;
     }
 
     #startDragWindow = (e) => {
-        this.#resetPositions();
+        this.resetPositions();
 
         e = e || window.event;
         e.preventDefault();
@@ -201,6 +146,77 @@ class Window {
         else this.window.style.display = 'flex';
     }
 
+    closeWindow = () => {
+        // Play closing animation
+        this.window.classList.remove('pop_out');
+        void this.window.offsetWidth;
+        this.window.classList.add('pop_out', 'pop_in');
+
+        setTimeout(() => {
+            this.window.remove();
+            windowManager.removeWindow(this.zPos);
+        }, 150);
+    }
+}
+
+class ResizableWindow extends Window {
+    
+    constructor(windowName, windowTitle, windowIcon=null, width, height, zPos) {
+        
+        super(windowName, windowTitle, windowIcon, width, height, zPos);
+
+        // window -> titlebar -> button container -> fullscreen button
+        this.window_title_maximisebutton = document.createElement('button');
+        this.window_title_maximisebutton.classList.add('windowbutton');
+        this.window_title_maximisebutton.textContent = 'o';
+        this.window_title_maximisebutton.addEventListener('click', this.toggleMaximiseWindow);
+        this.window_titlebar_buttons.insertBefore(this.window_title_maximisebutton, this.window_title_closebutton);
+
+        // Double click to maximise
+        this.window_titlebar.ondblclick = this.toggleMaximiseWindow;
+
+        // Make resizable with bottom right corner
+        const resizerBr = document.createElement('div');
+        resizerBr.classList.add('resizer', 'resizer_br');
+        resizerBr.onmousedown = this.#startResizeWindow;
+
+        this.window.appendChild(resizerBr);
+    }
+
+    // https://htmldom.dev/make-a-resizable-element/ thanks!
+    #startResizeWindow = (e) => {
+        this.resetPositions();
+
+        this.resizeX = e.clientX;
+        this.resizeY = e.clientY;
+
+            // Calculate the dimension of element
+        this.w = this.window.clientWidth - this.decorationWidth;
+        this.h = this.window.clientHeight - this.decorationHeight;
+
+        // Attach the listeners to `document`
+        document.addEventListener('mousemove', this.resizeMouseMoveHandler);
+        document.addEventListener('mouseup', this.resizeMouseUpHandler);
+    }
+
+    resizeMouseMoveHandler = (e) => {
+        // How far the mouse has been moved
+        const dx = e.clientX - this.resizeX;
+        const dy = e.clientY - this.resizeY;
+        this.width = this.w + dx;
+        this.height = this.h + dy;
+
+        // Adjust the dimension of element
+        this.window_contents.style.width = `${this.width}px`;
+        this.window_contents.style.height = `${this.height}px`;
+    }
+
+    resizeMouseUpHandler = () => {
+        // Remove the handlers of `mousemove` and `mouseup`
+        document.removeEventListener('mousemove', this.resizeMouseMoveHandler);
+        document.removeEventListener('mouseup', this.resizeMouseUpHandler);
+    }
+
     toggleMaximiseWindow = () => {
 
         if (this.maximised) {
@@ -227,32 +243,20 @@ class Window {
     }
 
     setMaximisedSize = () => {
-        this.#h = this.window.clientHeight - this.window_titlebar.clientHeight;
+        this.h = this.window.clientHeight - this.window_titlebar.clientHeight;
 
         this.window_contents.style.width = `100vw`;
-        this.window_contents.style.height = `${this.#h}px`;
-    }
-
-    closeWindow = () => {
-        // Play closing animation
-        this.window.classList.remove('pop_out');
-        void this.window.offsetWidth;
-        this.window.classList.add('pop_out', 'pop_in');
-
-        setTimeout(() => {
-            this.window.remove();
-            windowManager.removeWindow(this.zPos);
-        }, 150);
+        this.window_contents.style.height = `${this.h}px`;
     }
 }
 
 // Window types
-class NotepadWindow extends Window {
+class NotepadWindow extends ResizableWindow {
 
     constructor(initData, zPos) {
 
         const data = initData.data;
-        super('notepad',  (data.filename !== '' ? `Notepad - ${stripFilePath(data.filename)}` : 'Notepad'), 'https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png', initData.width ?? 650, initData.height ?? 400, initData.canResize ?? true, zPos);
+        super('notepad',  (data.filename !== '' ? `Notepad - ${stripFilePath(data.filename)}` : 'Notepad'), 'https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png', initData.width ?? 650, initData.height ?? 400, zPos);
 
         this.filename = data.filename;
         this.textarea = document.createElement('textarea');
@@ -264,7 +268,7 @@ class NotepadWindow extends Window {
 class AboutWindow extends Window {
 
     constructor(initData, zPos) {
-        super('about', 'About Windows', null, 500, 420, false, zPos);
+        super('about', 'About Windows', null, 500, 420, zPos);
 
         // Paragraph 1
         const container = document.createElement('div');
@@ -336,7 +340,7 @@ class AboutWindow extends Window {
     }
 }
 
-class IEWindow extends Window {
+class IEWindow extends ResizableWindow {
 
     url = 'https://google.com?igu=1';
     loadSpinner;
@@ -344,7 +348,7 @@ class IEWindow extends Window {
 
     constructor(initData, zPos) {
 
-        super('browser', 'Internet Explorer', 'https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419', initData.width ?? 1000, initData.height ?? 600, initData.canResize ?? true, zPos);
+        super('browser', 'Internet Explorer', 'https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419', initData.width ?? 1000, initData.height ?? 600, zPos);
         
         if (initData.data !== undefined)
             this.url = initData.data.url ?? this.url;

@@ -165,7 +165,7 @@ class ResizableWindow extends Window {
         // window -> titlebar -> button container -> fullscreen button
         this.window_title_maximisebutton = document.createElement('button');
         this.window_title_maximisebutton.classList.add('windowbutton');
-        this.window_title_maximisebutton.textContent = 'o';
+        this.window_title_maximisebutton.textContent = '☐';
         this.window_title_maximisebutton.addEventListener('click', this.toggleMaximiseWindow);
         this.window_titlebar_buttons.insertBefore(this.window_title_maximisebutton, this.window_title_closebutton);
 
@@ -223,6 +223,7 @@ class ResizableWindow extends Window {
         if (this.maximised) {
             
             this.window.classList.remove('windowmaximised');
+            this.window_title_maximisebutton.textContent = '☐';
             this.maximised = false;
 
             this.window_contents.style.width = `${this.width}px`;
@@ -235,6 +236,7 @@ class ResizableWindow extends Window {
         }
 
         this.window.classList.add('windowmaximised');
+        this.window_title_maximisebutton.textContent = '⧉';
         this.maximised = true;
 
         this.setMaximisedSize();

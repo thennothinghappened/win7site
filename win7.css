@@ -1,4 +1,11 @@
 
+:root {
+  --aero-bg: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmsfn.org%2Fboard%2Fuploads%2Fpost-385423-0-61567900-1390053212.png&f=1&nofb=1&ipt=e7392349aba1b7dc1f73b7a71bd3d6dc2233a645567bc4d77a44631d223320c6&ipo=images');
+  --aero-login-bg: url('https://img.wallpapersafari.com/desktop/1024/576/24/42/3LWMcO.jpg');
+  --cursor-spinner: url('http://www.rw-designer.com/cursor-view/14456.png');
+  --window-border: 2px solid grey;
+}
+
 body {
   font-family: "Segoe UI", sans-serif;
   background-image: url('https://wallpapercave.com/wp/Wn3Dygb.jpg');
@@ -20,7 +27,7 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: 10000;
-  background-image: url('https://img.wallpapersafari.com/desktop/1024/576/24/42/3LWMcO.jpg');
+  background-image: var(--aero-login-bg);
   background-color: #2075ac;
   background-size: cover;
   position: fixed;
@@ -53,7 +60,8 @@ body {
 }
 
 .window.focuswindow {
-  background-image: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmsfn.org%2Fboard%2Fuploads%2Fpost-385423-0-61567900-1390053212.png&f=1&nofb=1&ipt=e7392349aba1b7dc1f73b7a71bd3d6dc2233a645567bc4d77a44631d223320c6&ipo=images');
+  background-image: var(--aero-bg);
+  background-size: 200vw;
 }
 
 .window.windowmaximised {
@@ -206,7 +214,7 @@ ul {
   box-sizing: border-box;
   display: flex;
 
-  border: 2px solid grey;
+  border: var(--window-border);
   background-color: white;
 
   font-size: 13px;
@@ -277,10 +285,13 @@ hr {
 
 .window_browser .windowmain {
   flex-direction: column;
+  background: none;
+  border: none;
 }
 
 .window_browser .windowmain div {
   display: flex;
+  padding: 0 5px 5px 0;
 }
 
 .window_browser_urlbox {
@@ -292,7 +303,7 @@ hr {
 }
 
 .window_browser_spinner {
-  background-image: url('http://www.rw-designer.com/cursor-view/14456.png');
+  background-image: var(--cursor-spinner);
   background-position: center;
   background-size:170%;
   height: 25px;
@@ -303,6 +314,7 @@ hr {
 .window_browser iframe {
   flex-grow: 1;
   border: none;
+  border: var(--window-border);
 }
 
 .not_responding {

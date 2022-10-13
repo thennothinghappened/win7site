@@ -303,3 +303,9 @@ hr {
   flex-grow: 1;
   border: none;
 }
+
+.not_responding {
+  cursor: wait;
+  transition: 0.7s;
+  filter:contrast(0.2) brightness(1.5);
+}

@@ -121,7 +121,7 @@ class Window {
         this.#resizeY=0;
     }
 
-    // https://htmldom.dev/make-a-resizable-element/
+    // https://htmldom.dev/make-a-resizable-element/ thanks!
     #startResizeWindow = (e) => {
         this.#resetPositions();
 
@@ -197,8 +197,8 @@ class Window {
     }
 
     minimiseWindow = () => {
-        if (this.window.style.display === 'block') this.window.style.display = 'none';
-        else this.window.style.display = 'block';
+        if (this.window.style.display === 'flex') this.window.style.display = 'none';
+        else this.window.style.display = 'flex';
     }
 
     toggleMaximiseWindow = () => {
@@ -212,7 +212,7 @@ class Window {
             this.window_contents.style.height = `${this.height}px`;
 
             // We don't need the eventListener for the size anymore!
-            window.removeEventListener('resize', setMaximisedSize);
+            window.removeEventListener('resize', this.setMaximisedSize);
 
             return;
         }
@@ -220,16 +220,17 @@ class Window {
         this.window.classList.add('windowmaximised');
         this.maximised = true;
 
-        const setMaximisedSize = () => {
-            this.#h = this.window.clientHeight - this.window_titlebar.clientHeight;
-
-            this.window_contents.style.width = `100vw`;
-            this.window_contents.style.height = `${this.#h}px`;
-        }
-        setMaximisedSize();
+        this.setMaximisedSize();
 
         // Make sure size stays correct
-        window.addEventListener('resize', setMaximisedSize);
+        window.addEventListener('resize', this.setMaximisedSize);
+    }
+
+    setMaximisedSize = () => {
+        this.#h = this.window.clientHeight - this.window_titlebar.clientHeight;
+
+        this.window_contents.style.width = `100vw`;
+        this.window_contents.style.height = `${this.#h}px`;
     }
 
     closeWindow = () => {

@@ -367,7 +367,9 @@ class IEWindow extends ResizableWindow {
         goButton.value = 'Go';
         // Go to the new address!
         goButton.addEventListener('click', () => {
-            this.iframe.src = browserUrl(this.urlBox.value);
+            this.url = browserUrl(this.urlBox.value);
+            this.urlBox.value = this.url;
+            this.iframe.src = this.url;
             this.loadSpinner.style.opacity = 1;
         });
 
@@ -476,7 +478,7 @@ document.addEventListener('contextmenu', (e) => {
 
 function addHttpProtocol(string) {
     if (!string.startsWith('http://') && !string.startsWith('https://') && !string.startsWith('file://')) {
-      return 'http://' + string;
+      return 'https://' + string;
     }
     return string;
 }
@@ -484,7 +486,7 @@ function addHttpProtocol(string) {
 function browserUrl(string) {
     string = addHttpProtocol(string);
     if (string.indexOf('google.co') !== -1 && string.indexOf('igu=1') === -1) {
-        string += '?igu=1'
+        string += (string.indexOf('?') !== -1 ? '&' : '?') + 'igu=1'
     }
 
     return string;

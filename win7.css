@@ -62,7 +62,8 @@ body {
   width: 100vw;
   height: 100vh;
   padding: 0;
-
+  transition-duration: 0.1s;
+  transition-property: top, left;
 }
 
 .pop_out {

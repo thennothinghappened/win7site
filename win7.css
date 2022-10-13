@@ -53,6 +53,8 @@ body {
   border-radius: 10px;
   padding: 0 5px 5px 5px;
   background-color: rgba(123, 201, 240, 0.384);
+  background-image: var(--aero-bg);
+  background-size: 200vw;
   font-size: 15px;
   display: none;
   flex-direction: column;
@@ -70,6 +72,7 @@ body {
   padding: 0;
   transition-duration: 0.1s;
   transition-property: top, left;
+  border-radius: 0;
 }
 
 .pop_out {

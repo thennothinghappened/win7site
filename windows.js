@@ -84,6 +84,9 @@ class Window {
         // Make draggable
         this.window_titlebar.onmousedown = this.#startDragWindow;
 
+        // double click to maximise
+        this.window_titlebar.ondblclick = this.toggleMaximiseWindow;
+
         // Make focusable
         this.window.onmousedown = this.makeFocus;
 
@@ -100,7 +103,7 @@ class Window {
 
         // Insert the window
         document.body.appendChild(this.window);
-        this.window.style.display = 'block';
+        this.window.style.display = 'flex';
         this.window.focus();
 
         // Get decoration size for resizing!
@@ -172,6 +175,12 @@ class Window {
     }
 
     #dragWindow = (e) => {
+        if (this.maximised) {
+            this.toggleMaximiseWindow();
+            this.x = 0;
+            this.window.style.top = 0;
+        }
+
         // calculate the new cursor position:
         this.#pos1 = this.#pos3 - e.clientX;
         this.#pos2 = this.#pos4 - e.clientY;
@@ -197,11 +206,29 @@ class Window {
             
             this.window.classList.remove('windowmaximised');
             this.maximised = false;
+
+            this.window_contents.style.width = `${this.width}px`;
+            this.window_contents.style.height = `${this.height}px`;
+
+            // We don't need the eventListener for the size anymore!
+            window.removeEventListener('resize', setMaximisedSize);
+
             return;
         }
 
         this.window.classList.add('windowmaximised');
         this.maximised = true;
+
+        const setMaximisedSize = () => {
+            this.#h = this.window.clientHeight - this.window_titlebar.clientHeight;
+
+            this.window_contents.style.width = `100vw`;
+            this.window_contents.style.height = `${this.#h}px`;
+        }
+        setMaximisedSize();
+
+        // Make sure size stays correct
+        window.addEventListener('resize', setMaximisedSize);
     }
 
     closeWindow = () => {

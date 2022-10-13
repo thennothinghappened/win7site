@@ -8,6 +8,7 @@ body {
   min-height: 100vh;
   margin: 0;
   perspective: 1000px;
+  overflow: hidden;
 }
 
 .center_text {
@@ -48,6 +49,7 @@ body {
   background-color: rgba(153, 220, 253, 0.2);
   font-size: 15px;
   display: none;
+  flex-direction: column;
 }
 
 .window.focuswindow {
@@ -59,6 +61,8 @@ body {
   left: 0 !important;
   width: 100vw;
   height: 100vh;
+  padding: 0;
+
 }
 
 .pop_out {
@@ -216,6 +220,10 @@ ul {
 
 .resizer {
   position: absolute;
+}
+
+.windowmaximised .resizer {
+  display: none;
 }
 
 .resizer_br {

@@ -85,7 +85,8 @@ class Window {
         this.window_titlebar.onmousedown = this.#startDragWindow;
 
         // double click to maximise
-        this.window_titlebar.ondblclick = this.toggleMaximiseWindow;
+        if (canResize)
+            this.window_titlebar.ondblclick = this.toggleMaximiseWindow;
 
         // Make focusable
         this.window.onmousedown = this.makeFocus;

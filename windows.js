@@ -5,12 +5,6 @@ class Window {
     #pos2;
     #pos3;
     #pos4;
-    resizeX;
-    resizeY;
-    w;
-    h;
-    decorationWidth;
-    decorationHeight;
 
     constructor(windowName, windowTitle, windowIcon=null, width, height, zPos) {
 
@@ -85,10 +79,6 @@ class Window {
         document.body.appendChild(this.window);
         this.window.style.display = 'flex';
         this.window.focus();
-
-        // Get decoration size for resizing!
-        this.decorationWidth = this.window.clientWidth - this.window_contents.clientWidth;
-        this.decorationHeight = this.window.clientHeight - this.window_contents.clientHeight;
     }
 
     resetPositions = () => {
@@ -161,6 +151,13 @@ class Window {
 
 class ResizableWindow extends Window {
     
+    resizeX;
+    resizeY;
+    w;
+    h;
+    decorationWidth;
+    decorationHeight;
+
     constructor(windowName, windowTitle, windowIcon=null, width, height, zPos) {
         
         super(windowName, windowTitle, windowIcon, width, height, zPos);
@@ -181,6 +178,10 @@ class ResizableWindow extends Window {
         resizerBr.onmousedown = this.#startResizeWindow;
 
         this.window.appendChild(resizerBr);
+
+        // Get decoration size for resizing!
+        this.decorationWidth = this.window.clientWidth - this.window_contents.clientWidth;
+        this.decorationHeight = this.window.clientHeight - this.window_contents.clientHeight;
     }
 
     // https://htmldom.dev/make-a-resizable-element/ thanks!

@@ -54,6 +54,13 @@ body {
   background-image: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmsfn.org%2Fboard%2Fuploads%2Fpost-385423-0-61567900-1390053212.png&f=1&nofb=1&ipt=e7392349aba1b7dc1f73b7a71bd3d6dc2233a645567bc4d77a44631d223320c6&ipo=images');
 }
 
+.window.windowmaximised {
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw;
+  height: 100vh;
+}
+
 .pop_out {
   animation: pop_out 0.15s;
 }
@@ -78,6 +85,8 @@ body {
   border-radius: 10px 10px 0 0;
   color: black;
   user-select: none;
+  display: flex;
+  justify-content: space-between;
 }
 
 .windowtitle>span {
@@ -165,8 +174,6 @@ ul {
 }
 
 .windowbutton {
-  float: right;
-  margin: 0;
   border: 1px solid black;
   border-top: none;
   box-shadow: 0 1px 2px white;
@@ -177,6 +184,11 @@ ul {
   text-shadow: 0 0 2px black;
   font-weight: 1000;
   border-radius: 0 0 5px 5px;
+  background: none;
+}
+
+.focuswindow .windowbutton:hover {
+  box-shadow: 0 0 6px 3px rgb(96, 175, 248);
 }
 
 .focuswindow .windowbutton {
@@ -194,11 +206,24 @@ ul {
 
   font-size: 13px;
   font-weight: 500;
-  overflow: scroll;
+
+  overflow: hidden;
 }
 
 .windowmain img {
 	max-width: 100%;
+}
+
+.resizer {
+  position: absolute;
+}
+
+.resizer_br {
+  right: -5px;
+  bottom: -5px;
+  width: 10px;
+  height: 10px;
+  cursor: se-resize;
 }
 
 .closebutton {
@@ -220,9 +245,8 @@ hr {
 /* Window Type Specific */
 
 .windowmain textarea {
-  width: 100%;
-  min-width: inherit;
-  min-height: inherit;
+  flex-grow: 1;
+  resize: none;
 }
 
 .window_about > .windowmain > div {
@@ -246,8 +270,16 @@ hr {
   flex-direction: column;
 }
 
+.window_browser .windowmain div {
+  display: flex;
+}
+
 .window_browser_urlbox {
-  width: 80%;
+  flex-grow: 1;
+}
+
+.window_browser input {
+  border-radius: 0;
 }
 
 .window_browser_spinner {
@@ -261,4 +293,5 @@ hr {
 
 .window_browser iframe {
   flex-grow: 1;
+  border: none;
 }

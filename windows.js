@@ -5,6 +5,12 @@ class Window {
     #pos2;
     #pos3;
     #pos4;
+    #resizeX;
+    #resizeY;
+    #w;
+    #h;
+    #decorationWidth;
+    #decorationHeight;
 
     constructor(windowName, windowTitle, windowIcon=null, width, height, canResize, zPos) {
 
@@ -13,6 +19,8 @@ class Window {
         this.width = width;
         this.height = height;
         this.zPos = zPos;
+        this.resizable = canResize;
+        this.maximised = false;
         
         // Create window in DOM //
 
@@ -21,9 +29,13 @@ class Window {
         this.window.classList.add('window', 'pop_out', `window_${windowName}`);
         this.window.style.top = random_range(10, 40) + 'vh';
         this.window.style.left = random_range(20, 40) + 'vw';
+        
+        // Store X and Y positions for maximising
+        this.x = this.window.clientX;
+        this.y = this.window.clientY;
 
         // window -> titlebar
-        this.window_titlebar = document.createElement('div');
+        this.window_titlebar = document.createElement('header');
         this.window_titlebar.classList.add('windowtitle');
         this.window.appendChild(this.window_titlebar);
 
@@ -42,51 +54,116 @@ class Window {
         this.window_title.appendChild(this.window_title_text);
         this.window_titlebar.appendChild(this.window_title);
 
-        // window -> titlebar -> close button
+        // window -> titlebar -> button container
+        this.window_titlebar_buttons = document.createElement('div');
+        this.window_titlebar_buttons.classList.add('windowbuttoncontainer');
+        this.window_titlebar.appendChild(this.window_titlebar_buttons);
+
+        if (canResize) {
+            // window -> titlebar -> button container -> fullscreen button
+            this.window_title_maximisebutton = document.createElement('button');
+            this.window_title_maximisebutton.classList.add('windowbutton');
+            this.window_title_maximisebutton.textContent = 'o';
+            this.window_title_maximisebutton.addEventListener('click', this.toggleMaximiseWindow);
+            this.window_titlebar_buttons.appendChild(this.window_title_maximisebutton);
+        }
+
+        // window -> titlebar -> button container -> close button
         this.window_title_closebutton = document.createElement('button');
         this.window_title_closebutton.classList.add('windowbutton', 'closebutton');
         this.window_title_closebutton.textContent = 'X';
         this.window_title_closebutton.addEventListener('click', this.closeWindow);
-        this.window_titlebar.appendChild(this.window_title_closebutton);
+        this.window_titlebar_buttons.appendChild(this.window_title_closebutton);
 
         // window -> content
-        this.window_contents = document.createElement('div');
+        this.window_contents = document.createElement('main');
         this.window_contents.classList.add('windowmain');
 
-        if (canResize) {
-            this.window_contents.style.minWidth = `${width}px`;
-            this.window_contents.style.minHeight = `${height}px`;
-        } else {
-            this.window_contents.style.width = `${width}px`;
-            this.window_contents.style.height = `${height}px`;
-        }
         this.window.appendChild(this.window_contents);
 
         // Make draggable
-        this.window_titlebar.onmousedown = this.startDragWindow;
+        this.window_titlebar.onmousedown = this.#startDragWindow;
+
+        // Make focusable
+        this.window.onmousedown = this.makeFocus;
+
+        // Make resizable
+        this.window_contents.style.width = `${width}px`;
+        this.window_contents.style.height = `${height}px`;
+        if (canResize) {
+            const resizerBr = document.createElement('div');
+            resizerBr.classList.add('resizer', 'resizer_br');
+            resizerBr.onmousedown = this.#startResizeWindow;
+
+            this.window.appendChild(resizerBr);
+        }
 
         // Insert the window
         document.body.appendChild(this.window);
         this.window.style.display = 'block';
         this.window.focus();
+
+        // Get decoration size for resizing!
+        this.#decorationWidth = this.window.clientWidth - this.window_contents.clientWidth;
+        this.#decorationHeight = this.window.clientHeight - this.window_contents.clientHeight;
     }
 
-    startDragWindow = (e) => {
+    #resetPositions = () => {
         this.#pos1=0;
         this.#pos2=0;
         this.#pos3=0;
         this.#pos4=0;
+        this.#resizeX=0;
+        this.#resizeY=0;
+    }
+
+    // https://htmldom.dev/make-a-resizable-element/
+    #startResizeWindow = (e) => {
+        this.#resetPositions();
+
+        this.#resizeX = e.clientX;
+        this.#resizeY = e.clientY;
+
+         // Calculate the dimension of element
+        this.#w = this.window.clientWidth - this.#decorationWidth;
+        this.#h = this.window.clientHeight - this.#decorationHeight;
+
+        // Attach the listeners to `document`
+        document.addEventListener('mousemove', this.#resizeMouseMoveHandler);
+        document.addEventListener('mouseup', this.#resizeMouseUpHandler);
+    }
+
+    #resizeMouseMoveHandler = (e) => {
+        // How far the mouse has been moved
+        const dx = e.clientX - this.#resizeX;
+        const dy = e.clientY - this.#resizeY;
+        this.width = this.#w + dx;
+        this.height = this.#h + dy;
+
+        // Adjust the dimension of element
+        this.window_contents.style.width = `${this.width}px`;
+        this.window_contents.style.height = `${this.height}px`;
+    }
+
+    #resizeMouseUpHandler = () => {
+        // Remove the handlers of `mousemove` and `mouseup`
+        document.removeEventListener('mousemove', this.#resizeMouseMoveHandler);
+        document.removeEventListener('mouseup', this.#resizeMouseUpHandler);
+    }
+
+    #startDragWindow = (e) => {
+        this.#resetPositions();
 
         e = e || window.event;
-        //e.preventDefault();
+        e.preventDefault();
 
-        // get the mouse cursor position at startup:
+        // get the mouse cursor position at start of move
         this.#pos3 = e.clientX;
         this.#pos4 = e.clientY;
         document.onmouseup = this.#stopDragWindow;
         // call a function whenever the cursor moves:
         document.onmousemove = this.#dragWindow;
-        windowManager.bringWindowToFront(this.zPos);
+        this.makeFocus();
     }
 
     #stopDragWindow = () => {
@@ -105,9 +182,26 @@ class Window {
         this.window.style.left = (this.window.offsetLeft - this.#pos1) + "px";
     }
 
+    makeFocus = () => {
+        windowManager.bringWindowToFront(this.zPos);
+    }
+
     minimiseWindow = () => {
         if (this.window.style.display === 'block') this.window.style.display = 'none';
         else this.window.style.display = 'block';
+    }
+
+    toggleMaximiseWindow = () => {
+
+        if (this.maximised) {
+            
+            this.window.classList.remove('windowmaximised');
+            this.maximised = false;
+            return;
+        }
+
+        this.window.classList.add('windowmaximised');
+        this.maximised = true;
     }
 
     closeWindow = () => {
@@ -221,7 +315,7 @@ class IEWindow extends Window {
 
     constructor(initData, zPos) {
 
-        super('browser', 'Internet Explorer', 'https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419', initData.width ?? 1200, initData.height ?? 700, initData.canResize, zPos);
+        super('browser', 'Internet Explorer', 'https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419', initData.width ?? 1000, initData.height ?? 600, initData.canResize ?? true, zPos);
         
         if (initData.data !== undefined)
             this.url = initData.data.url ?? this.url;
@@ -240,7 +334,7 @@ class IEWindow extends Window {
         // Go to the new address!
         goButton.addEventListener('click', () => {
             this.iframe.src = browserUrl(this.urlBox.value);
-            this.loadSpinner.style.display = 'inline';
+            this.loadSpinner.style.opacity = 1;
         });
 
         this.loadSpinner = document.createElement('div');
@@ -254,7 +348,7 @@ class IEWindow extends Window {
         this.iframe.src = this.url;
         // Hide the load spinner when page loaded
         this.iframe.addEventListener('load', () => {
-            this.loadSpinner.style.display = 'none';
+            this.loadSpinner.style.opacity = 0;
         });
 
         this.window_contents.appendChild(navBar);
@@ -315,6 +409,18 @@ class WindowManager {
 
 }
 
+class FileSystem {
+
+    constructor() {
+
+        localStorage.setItem();
+    }
+
+    getSize = () => {
+        return new Blob(Object.values(localStorage)).size;
+    }
+}
+
 const windowManager = new WindowManager();
 
 // Override behaviour of some elements
@@ -335,7 +441,7 @@ document.addEventListener('contextmenu', (e) => {
 });
 
 function addHttpProtocol(string) {
-    if (!string.startsWith('http://') && !string.startsWith('https://')) {
+    if (!string.startsWith('http://') && !string.startsWith('https://') && !string.startsWith('file://')) {
       return 'http://' + string;
     }
     return string;

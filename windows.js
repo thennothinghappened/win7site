@@ -164,6 +164,7 @@ class BaseWindow {
     static appname = 'UndefinedWindow';
     static appcatagories = [];
     static description = 'Undefined App!';
+    static fileassociations = [];
 
     static get ICON() {
         return this.icon;
@@ -183,6 +184,10 @@ class BaseWindow {
 
     static get DESCRIPTION() {
         return this.description;
+    }
+
+    static get ASSOCIATIONS() {
+        return this.fileassociations;
     }
 }
 
@@ -325,6 +330,7 @@ class WindowManager {
           
                 setTimeout(() => {
                   loginElement.style.display = 'none';
+                  fileSystem.openFile('Users\\DefaultUser\\Desktop\\About Windows.lnk');
                 }, 1000)
             });
         })
@@ -456,6 +462,9 @@ class FileSystem {
             Microsoft: {
                 Windows: {
                     CurrentVersion: {
+                        Explorer: {
+                            FileExts: {}
+                        },
                         Uninstall: {}
                     }
                 }
@@ -472,8 +481,19 @@ class FileSystem {
         })
     };
 
-    #default_HKEY_USERS = {
-        Environment: {}
+    #default_HKEY_CURRENT_USER = {
+        Environment: new FileNode({}),
+        SOFTWARE: new FileNode({
+            Microsoft: {
+                Windows: {
+                    CurrentVersion: {
+                        Explorer: {
+                            FileExts: {}
+                        }
+                    }
+                }
+            }
+        })
     };
 
     #defaultDrive = {
@@ -483,7 +503,7 @@ class FileSystem {
                 'config': this.#default_HKEY_LOCAL_MACHINE
             },
             'Profiles': {
-                'DefaultUser': this.#default_HKEY_USERS
+                'DefaultUser': this.#default_HKEY_CURRENT_USER
             }
         },
         'Users': {
@@ -519,6 +539,9 @@ class FileSystem {
         }
         
         console.log(this.fancyDriveSize());
+
+        // Login
+        this.CurrentUser = 'DefaultUser';
     }
 
     // Remake the filesystem from scratch (throws away all data!!)
@@ -557,15 +580,23 @@ class FileSystem {
 
     /** Get a Node from a filepath */
     getNode = (path) => {
-        if (!this.checkFileExists(path)) 
-            return false;
-        
         return getNestedValue(this.drive, path, '\\');
+    }
+
+    /** Check if a node is a folder */
+    nodeIsFolder = (path) => {
+        const node = this.getNode(path);
+
+
+        // Files always contain a member called metadata.
+        // We know it is a folder if it doesn't (yes, that means 'metadata' is a disallowed filename)
+        if (!node.metadata) return true;
+        return false;
     }
 
     /** Check Node exists */
     checkNodeExists = (path) => {
-        return (getNestedValue(this.drive, path, '\\') !== undefined);
+        return (this.getNode(path) !== undefined);
     }
 
     /** Set a Node at a filepath */
@@ -573,14 +604,23 @@ class FileSystem {
         setNestedValue(this.drive, path, '\\', node);
     }
 
+    getHkey = (hkeyName) => {
+        switch (hkeyName) {
+            case 'HKEY_USERS': return this.drive.Windows.Profiles;
+            case 'HKEY_CURRENT_USER': return this.drive.Windows.Profiles[this.CurrentUser];
+            case 'HKEY_LOCAL_MACHINE': return this.drive.Windows.System32.config;
+            default: return null;
+        }
+    }
+
     /** Get a key from the registry */
-    getRegistryKey = (hive, key) => {
-        return getNestedValue(this.drive.Windows.system32.config[hive].data, key, '\\');
+    getRegistryKey = (hkeyName, hive, key) => {
+        return getNestedValue(this.getHkey(hkeyName)[hive].data, key, '\\');
     }
 
     /** Set a key in the registry */
-    setRegistryKey = (hive, key, value) => {
-        setNestedValue(this.drive.Windows.system32.config[hive].data, key, '\\', value);
+    setRegistryKey = (hkeyName, hive, key, value) => {
+        setNestedValue(this.getHkey(hkeyName)[hive].data, key, '\\', value);
     }
 
     /** Install an application from its window class */
@@ -595,7 +635,7 @@ class FileSystem {
         }
 
         // Install the app...
-        this.setRegistryKey('SOFTWARE', applistKey+'\\'+app.FANCYNAME, {
+        this.setRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', applistKey+'\\'+app.FANCYNAME, {
             InstallDate: new Date(),
         });
 
@@ -606,7 +646,12 @@ class FileSystem {
         this.setNode('Program Files\\' + app.FANCYNAME, appFolder);
 
         // Create the desktop shortcut
-        this.drive.Users.DefaultUser.Desktop[app.FANCYNAME + '.lnk'] = new FileNode(`Program Files\\${app.FANCYNAME}\\${app.CSSNAME}.exe`);
+        this.drive.Users.DefaultUser.Desktop[app.FANCYNAME + '.lnk'] = new FileNode(`file://Program Files\\${app.FANCYNAME}\\${app.CSSNAME}.exe`);
+
+        // Add file associations
+        app.ASSOCIATIONS.forEach((fileExtension) => {
+            this.addFileExtensionAssociation(fileExtension, app);
+        });
 
         // Save changes to disk
         this.saveDrive();
@@ -616,13 +661,99 @@ class FileSystem {
 
     /** Get the app associated with a filetype.
      * If there is none, prompt the user. */
-    getProgramForFileExtension = (extension) => {
-        const associations = this.getRegistryKey('')
+     getDefaultExtensionAssociation = (extension) => {
+        const associations = this.getRegistryKey('HKEY_CURRENT_USER', 'SOFTWARE', 'Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts');
+        if (!associations[extension]) {
+            // Open it in notepad for now
+            return 'NotepadWindow';
+        }
+
+        return associations[extension].Progid;
+    }
+
+    /** Add a file extension association for a program */
+    addFileExtensionAssociation = (fileExtension, app) => {
+        // Add as possible to open with
+        const extPath = 'Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts';
+
+        // Get current list of apps to open it with
+        const ext = this.getRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', extPath);
+        let appList = [app.name];
+
+        if (ext[fileExtension] !== undefined) {
+            // If the key already exists, append ours instead
+            ext.applist.push(app.name);
+            appList = ext.applist;
+
+        }
+
+        this.setRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', extPath+'\\'+fileExtension, {
+            applist: appList
+        });
+    }
+
+    setDefaultExtensionAssociation = (fileExtension, app) => {
+        this.setRegistryKey('HKEY_CURRENT_USER', 'SOFTWARE', 'Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\'+fileExtension, {
+            UserChoice: app.name
+        });
     }
 
     /** Open a file */
-    openFile = (path) => {
+    openFile = (path, initData={}) => {
 
+        // Make sure it exists...
+        if (!this.checkNodeExists(path)) {
+            return;
+        }
+
+        // Handle folders
+        if (this.nodeIsFolder(path)) {
+            // Open in Explorer
+            windowManager.createWindow(ExplorerWindow, {data: {path: path}});
+            return;
+        }
+
+        // Get file extension
+        const ext = '.' + path.split('.').pop();
+
+        switch (ext) {
+
+            // Handle hard-coded cases first...
+            case '.exe': 
+                // Run the program using eval (very unsafe, as is windows :p)
+                const program = this.getNode(path).data;
+                try {
+                    eval(program);
+                } catch (error) {
+                    // program failed to execute
+                }
+
+                break;
+
+            case '.lnk':
+                // File is just a pointer to another file, so go open that one...
+                const data = this.getNode(path).data;
+                const link = trimAndGetUrlScheme(data);
+                
+                if (link.scheme === 'file') {
+                    this.openFile(link.url);
+                    break;
+                }
+                
+                if (link.scheme === 'http' || link.scheme === 'https') {
+                    windowManager.createWindow(IEWindow, {data: {url: data}})
+                    break;
+                }
+                
+                // Unknown scheme... show error (later)
+
+                break;
+
+            // Handle using app specified
+            default: 
+                
+                break;
+        }
     }
 }
 
@@ -645,6 +776,15 @@ document.addEventListener('click', (e) => {
 document.addEventListener('contextmenu', (e) => {
     e.preventDefault()
 });
+
+function trimAndGetUrlScheme(string) {
+    const tempStr = string.split('://');
+
+    return {
+        scheme: tempStr[0],
+        url: tempStr[1]
+    };
+}
 
 function addHttpProtocol(string) {
     if (!string.startsWith('http://') && !string.startsWith('https://') && !string.startsWith('file://')) {
@@ -694,8 +834,10 @@ function append_missing_keys(base, test) {
 // Get a nested key from a string!
 // https://stackoverflow.com/questions/34257474/how-to-get-the-value-of-nested-javascript-object-property-by-string-key
 function getNestedValue(obj, key, splitter='.') {
-    return key.split(splitter).reduce((result, k) => {
-       return result[k] 
+    console.log(key);
+    return new String(key).split(splitter).reduce((result, k) => {
+        if (result === undefined) return undefined;
+        return result[k];
     }, obj);
 }
 

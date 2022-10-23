@@ -6,6 +6,7 @@ class NotepadWindow extends ResizableWindow {
     static appname = 'Notepad';
     static appcatagories = ['Word Processor', 'Office', 'Productivity'];
     static description = 'Simple writing app.';
+    static fileassociations = ['.txt'];
 
     constructor(initData, zPos) {
 
@@ -165,11 +166,12 @@ class ExplorerWindow extends ResizableWindow {
     static appname = 'Windows Explorer';
     static appcatagories = [];
     static description = 'Folder viewer tool';
+    static fileassociations = ['.htm', '.html'];
 
     constructor(initData, zPos) {
 
         super('Windows Explorer', initData.width ?? 650, initData.height ?? 400, zPos);
-        
+
     }
 
 }

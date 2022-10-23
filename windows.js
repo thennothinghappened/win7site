@@ -330,7 +330,6 @@ class WindowManager {
           
                 setTimeout(() => {
                   loginElement.style.display = 'none';
-                  fileSystem.openFile('Users\\DefaultUser\\Desktop\\About Windows.lnk');
                 }, 1000)
             });
         })
@@ -391,20 +390,6 @@ class WindowManager {
         desktopIcon.appendChild(title);
 
         this.desktop.appendChild(desktopIcon);
-    }
-
-    // Register a window (add to desktop)
-    installApp = (windowType) => {
-
-        // Make sure we aren't adding it again
-        if (this.windowDB[windowType.FANCYNAME])
-            return;
-        
-        // Add to windowDB
-        this.windowDB[windowType.FANCYNAME] = windowType;
-
-        // Create desktop shortcut
-        this.createDesktopIcon(windowType.ICON, windowType.FANCYNAME, windowType);
     }*/
 
 }
@@ -587,10 +572,9 @@ class FileSystem {
     nodeIsFolder = (path) => {
         const node = this.getNode(path);
 
-
         // Files always contain a member called metadata.
         // We know it is a folder if it doesn't (yes, that means 'metadata' is a disallowed filename)
-        if (!node.metadata) return true;
+        if (node.metadata === undefined) return true;
         return false;
     }
 
@@ -641,12 +625,12 @@ class FileSystem {
 
         // Create the Program Files folder for it
         const appFolder = {};
-        appFolder[app.CSSNAME + '.exe'] = new FileNode(`windowManager.createWindow(${app.name}, initData);`);
+        appFolder[app.CSSNAME + '.exe'] = new FileNode(`windowManager.createWindow(${app.name}, initData);`, {icon: app.ICON});
 
         this.setNode('Program Files\\' + app.FANCYNAME, appFolder);
 
         // Create the desktop shortcut
-        this.drive.Users.DefaultUser.Desktop[app.FANCYNAME + '.lnk'] = new FileNode(`file://Program Files\\${app.FANCYNAME}\\${app.CSSNAME}.exe`);
+        this.drive.Users.DefaultUser.Desktop[app.FANCYNAME + '.lnk'] = new FileNode(`file://Program Files\\${app.FANCYNAME}\\${app.CSSNAME}.exe`, {icon: app.ICON});
 
         // Add file associations
         app.ASSOCIATIONS.forEach((fileExtension) => {
@@ -703,14 +687,14 @@ class FileSystem {
 
         // Make sure it exists...
         if (!this.checkNodeExists(path)) {
-            return;
+            return false;
         }
 
         // Handle folders
         if (this.nodeIsFolder(path)) {
             // Open in Explorer
             windowManager.createWindow(ExplorerWindow, {data: {path: path}});
-            return;
+            return false;
         }
 
         // Get file extension
@@ -751,10 +735,13 @@ class FileSystem {
 
             // Handle using app specified
             default: 
-                
+                windowManager.createWindow(eval(this.getDefaultExtensionAssociation(ext)), {data: {path: path}});
                 break;
         }
+
+        return true;
     }
+
 }
 
 const fileSystem = new FileSystem();
@@ -803,7 +790,7 @@ function browserUrl(string) {
 }
 
 function stripFilePath(filename) {
-    return filename.slice(filename.indexOf('/')+1);
+    return filename.split('\\').pop();
 }
 
 function random_range(min, max) {
@@ -834,8 +821,16 @@ function append_missing_keys(base, test) {
 // Get a nested key from a string!
 // https://stackoverflow.com/questions/34257474/how-to-get-the-value-of-nested-javascript-object-property-by-string-key
 function getNestedValue(obj, key, splitter='.') {
-    console.log(key);
-    return new String(key).split(splitter).reduce((result, k) => {
+
+    // Make sure it has a separator anyway
+    if (key.indexOf(splitter) === -1)
+        return obj;
+    
+    // remove leading
+    if (key.startsWith(splitter))
+        key = key.slice(splitter.length);
+
+    return key.split(splitter).reduce((result, k) => {
         if (result === undefined) return undefined;
         return result[k];
     }, obj);

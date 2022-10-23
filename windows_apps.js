@@ -10,13 +10,18 @@ class NotepadWindow extends ResizableWindow {
 
     constructor(initData, zPos) {
 
-        const data = initData.data ?? {filename: ''};
-        super((data.filename !== '' ? `Notepad - ${stripFilePath(data.filename)}` : 'Notepad'), initData.width ?? 650, initData.height ?? 400, zPos);
+        const data = initData.data ?? {path: ''};
+        super((data.path !== '' ? `Notepad - ${stripFilePath(data.path)}` : 'Notepad'), initData.width ?? 650, initData.height ?? 400, zPos);
 
-        this.filename = data.filename;
+        this.filename = data.path;
         this.textarea = document.createElement('textarea');
         this.textarea.textContent = data.text;
         this.window_contents.appendChild(this.textarea);
+        this.openFile();
+    }
+
+    openFile = () => {
+        this.textarea.textContent = fileSystem.getNode(this.filename).data;
     }
 }
 
@@ -128,10 +133,8 @@ class IEWindow extends ResizableWindow {
         this.urlBox.value = this.url;
         this.urlBox.classList.add('window_internetexplorer_urlbox');
 
-        const goButton = document.createElement('input');
-        goButton.type = 'button';
-        goButton.name = 'Go';
-        goButton.value = 'Go';
+        const goButton = document.createElement('button');
+        goButton.textContent = 'Go';
         // Go to the new address!
         goButton.addEventListener('click', () => {
             this.url = browserUrl(this.urlBox.value);
@@ -168,10 +171,70 @@ class ExplorerWindow extends ResizableWindow {
     static description = 'Folder viewer tool';
     static fileassociations = ['.htm', '.html'];
 
+    url = '';
+
     constructor(initData, zPos) {
 
         super('Windows Explorer', initData.width ?? 650, initData.height ?? 400, zPos);
 
+        this.main = document.createElement('div');
+        this.main.classList.add('window_windowsexplorer_main');
+
+        this.navBar = document.createElement('nav');
+        this.navBar.classList.add('window_windowsexplorer_navbar');
+
+        this.urlBox = document.createElement('input');
+        this.goUpBox = document.createElement('button');
+        this.goUpBox.textContent = '^';
+        this.goUpBox.addEventListener('click', this.goUp);
+
+        this.dirListing = document.createElement('div');
+        this.dirListing.classList.add('window_windowsexplorer_dirlist');
+
+        this.navBar.appendChild(this.urlBox);
+        this.navBar.appendChild(this.goUpBox);
+        this.main.appendChild(this.navBar);
+        this.main.appendChild(this.dirListing);
+        this.window_contents.appendChild(this.main);
+
+        this.updateDirList();
+    }
+
+    goUp = () => {
+        this.url = this.url.slice(0, this.url.lastIndexOf('\\'));
+        this.urlBox.value = this.url;
+        this.updateDirList();
+    }
+
+    updateDirList = () => {
+        const list = fileSystem.getNode(this.url);
+        if (!list) {
+            return;
+        }
+
+        this.dirListing.innerHTML = '';
+
+        Object.keys(list).forEach((key) => {
+            const node = document.createElement('button');
+            node.textContent = key;
+
+            if (fileSystem.nodeIsFolder(this.url+'\\'+key)) {
+                // Enter folder
+                node.addEventListener('dblclick', () => {
+                    this.url += '\\' + node.textContent;
+                    this.urlBox.value = this.url;
+
+                    this.updateDirList();
+                });
+            } else {
+                // Open file
+                node.addEventListener('dblclick', () => {
+                    fileSystem.openFile(this.url + '\\' + node.textContent);
+                })
+            }
+
+            this.dirListing.appendChild(node);
+        })
     }
 
 }

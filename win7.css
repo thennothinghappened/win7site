@@ -294,16 +294,26 @@ hr {
   border: none;
 }
 
-.window_internetexplorer .windowmain div {
+.window_windowsexplorer_main {
+  width: 100%;
+}
+
+.window_internetexplorer .windowmain div, .window_windowsexplorer .window_windowsexplorer_navbar {
   display: flex;
   padding: 0 5px 5px 0;
 }
 
-.window_internetexplorer_urlbox {
-  flex-grow: 1;
+.window_windowsexplorer_dirlist {
+  display: flex;
+  flex-direction: column;
 }
 
-.window_internetexplorer input {
+.window_windowsexplorer_dirlist button {
+  
+}
+
+.window_internetexplorer input, .window_windowsexplorer_navbar input {
+  flex-grow: 1;
   border-radius: 0;
 }
 

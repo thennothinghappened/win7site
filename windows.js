@@ -300,17 +300,13 @@ class WindowManager {
 
     constructor() {
 
-        // Create the desktop and start menu (later)
-        this.desktop = document.createElement('div');
-        this.desktop.id = 'desktop';
-
         // Get the startup sound
         const StartupSound = new Audio('https://archive.org/download/MicrosoftWindows7StartupSound/Microsoft%20Windows%207%20Startup%20Sound.ogg');
 
         // Create when document ready
         document.addEventListener('DOMContentLoaded', () => {
             
-            document.body.appendChild(this.desktop);
+            document.body.appendChild(fileSystem.desktop);
 
             const loginSpinner = document.createElement('img');
             loginSpinner.src = 'http://www.rw-designer.com/cursor-view/14456.png';
@@ -375,26 +371,11 @@ class WindowManager {
         this.refreshWindowOrder();
     }
 
-    /*createDesktopIcon = (icon, title, callback) => {
-        const desktopIcon = document.createElement('button');
-        desktopIcon.classList.add('desktopicon');
-        desktopIcon.addEventListener('dblclick', () => {this.createWindow(windowType)});
-
-        const icon = document.createElement('img');
-        icon.src = windowType.ICON;
-
-        const title = document.createElement('span');
-        title.textContent = windowType.FANCYNAME;
-
-        desktopIcon.appendChild(icon);
-        desktopIcon.appendChild(title);
-
-        this.desktop.appendChild(desktopIcon);
-    }*/
-
 }
 
 class Personalisation {
+    // ill fix it later
+    static defaultFileIcon = 'https://64.media.tumblr.com/ecebabec49b20582e38d37d22da38a10/5eebb6709b3b0f53-cc/s540x810/821ebf28566545369c64b31a33607b940f8c0b53.png';
     static docRoot = document.querySelector(':root');
 
     static getCssVar = (variable) => {
@@ -522,11 +503,22 @@ class FileSystem {
                 this.saveDrive();
             }
         }
-        
-        console.log(this.fancyDriveSize());
 
         // Login
         this.CurrentUser = 'DefaultUser';
+
+        // Prepare desktop
+
+        // Create the desktop and start menu (later)
+        this.desktop = document.createElement('div');
+        this.desktop.id = 'desktop';
+
+        const desktopNode = this.getNode(`Users\\${this.CurrentUser}\\Desktop`);
+        Object.keys(desktopNode).forEach((node) => {
+            this.createDesktopIcon(node, desktopNode[node].metadata.icon);
+        });
+
+        console.log(this.fancyDriveSize());
     }
 
     // Remake the filesystem from scratch (throws away all data!!)
@@ -643,6 +635,16 @@ class FileSystem {
         return true;
     }
 
+    /** Base get file extension... */
+    getFileExtension = (fileExtension) => {
+        const extPath = 'Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\'+fileExtension;
+        if (this.getRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', extPath) === undefined) {
+            this.addFileExtension(fileExtension);
+        }
+
+        return this.getRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', extPath);
+    }
+
     /** Get the app associated with a filetype.
      * If there is none, prompt the user. */
      getDefaultExtensionAssociation = (extension) => {
@@ -653,6 +655,28 @@ class FileSystem {
         }
 
         return associations[extension].Progid;
+    }
+
+    /** Get the default file extension icon */
+    getFileExtensionIcon = (fileExtension) => {
+        return this.getFileExtension(fileExtension).icon;
+    }
+
+    /** Create a file extension entry if it doesn't exist */
+    addFileExtension = (fileExtension, icon) => {
+        const extPath = 'Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\'+fileExtension;
+        if (this.getRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', extPath) !== undefined)
+            return false;
+        
+        this.setRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', extPath, {
+            applist: [],
+            icon: icon ?? null
+        });
+
+        this.saveDrive();
+
+        return true;
+        
     }
 
     /** Add a file extension association for a program */
@@ -674,12 +698,24 @@ class FileSystem {
         this.setRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', extPath+'\\'+fileExtension, {
             applist: appList
         });
+
+        this.saveDrive();
     }
 
+    /** Set the default program to open a file with */
     setDefaultExtensionAssociation = (fileExtension, app) => {
         this.setRegistryKey('HKEY_CURRENT_USER', 'SOFTWARE', 'Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\'+fileExtension, {
             UserChoice: app.name
         });
+
+        this.saveDrive();
+    }
+
+    /** Set the default icon for a file type */
+    setDefaultExtensionIcon = (fileExtension, icon) => {
+        const extPath = 'Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\'+fileExtension;
+        const ext = this.getRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', extPath);
+        ext.icon = icon;
     }
 
     /** Open a file */
@@ -740,6 +776,32 @@ class FileSystem {
         }
 
         return true;
+    }
+
+    /** Create a desktop icon */
+    createDesktopIcon = (filename, icon) => {
+
+        // Get file extension
+        const path = `Users\\${this.CurrentUser}\\Desktop\\${filename}`;
+        const ext = '.' + path.split('.').pop();
+
+        const desktopIcon = document.createElement('button');
+        desktopIcon.type = 'button';
+        desktopIcon.classList.add('desktopicon');
+        desktopIcon.addEventListener('dblclick', () => {
+            this.openFile(path);
+        });
+
+        const img = document.createElement('img');
+        img.src = icon ?? this.getFileExtensionIcon(ext);
+
+        const title = document.createElement('span');
+        title.textContent = filename;
+
+        desktopIcon.appendChild(img);
+        desktopIcon.appendChild(title);
+
+        this.desktop.appendChild(desktopIcon);
     }
 
 }

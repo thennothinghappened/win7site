@@ -21,7 +21,8 @@ class NotepadWindow extends ResizableWindow {
     }
 
     openFile = () => {
-        this.textarea.textContent = fileSystem.getNode(this.filename).data;
+        const content = fileSystem.getNode(this.filename).data;
+        this.textarea.textContent = typeof content === String ? content : JSON.stringify(content);
     }
 }
 
@@ -165,7 +166,7 @@ class IEWindow extends ResizableWindow {
 
 class ExplorerWindow extends ResizableWindow {
 
-    static icon = null;
+    static icon = 'https://winaero.com/blog/wp-content/uploads/2016/05/Windows-7-8.1.png';
     static appname = 'Windows Explorer';
     static appcatagories = [];
     static description = 'Folder viewer tool';
@@ -215,13 +216,35 @@ class ExplorerWindow extends ResizableWindow {
         this.dirListing.innerHTML = '';
 
         Object.keys(list).forEach((key) => {
+            const ext = '.' + key.split('.').pop();
+            const fdata = list[key];
+
             const node = document.createElement('button');
-            node.textContent = key;
+            node.style.display = 'flex';
+
+            const icon = document.createElement('img');
+            if (fileSystem.nodeIsFolder(this.url+'\\'+key)) {
+                icon.src = 'https://icons.iconarchive.com/icons/visualpharm/must-have/256/Folder-icon.png';
+            } else {
+                if (key.indexOf('.') !== -1) {
+                    icon.src = fdata.metadata?.icon ?? fileSystem.getFileExtensionIcon(ext) ?? Personalisation.defaultFileIcon;
+                } else {
+                    // Default fallback icon
+                    icon.src = Personalisation.defaultFileIcon;
+                }
+            }
+            icon.style.height = '20px';
+
+            const name = document.createElement('div');
+            name.textContent = key;
+
+            node.appendChild(icon);
+            node.appendChild(name);
 
             if (fileSystem.nodeIsFolder(this.url+'\\'+key)) {
                 // Enter folder
                 node.addEventListener('dblclick', () => {
-                    this.url += '\\' + node.textContent;
+                    this.url += '\\' + key;
                     this.urlBox.value = this.url;
 
                     this.updateDirList();
@@ -229,7 +252,7 @@ class ExplorerWindow extends ResizableWindow {
             } else {
                 // Open file
                 node.addEventListener('dblclick', () => {
-                    fileSystem.openFile(this.url + '\\' + node.textContent);
+                    fileSystem.openFile(this.url + '\\' + key);
                 })
             }
 

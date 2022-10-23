@@ -122,6 +122,12 @@ body {
 button {
   transition: 0.15s ease;
   border-radius: 3px;
+  border-color: lightgrey;
+}
+
+button:active {
+  border-color: lightgrey;
+  background-color: lightgrey;
 }
 
 a {

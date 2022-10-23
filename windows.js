@@ -6,10 +6,10 @@ class Window {
     #pos3;
     #pos4;
 
-    constructor(windowName, windowTitle, windowIcon=null, width, height, zPos) {
+    constructor(windowTitle=this.constructor.FANCYNAME, width, height, zPos) {
 
         this.windowTitle = windowTitle;
-        this.windowIcon = windowIcon;
+        this.windowIcon = this.constructor.ICON;
         this.width = width;
         this.height = height;
         this.zPos = zPos;
@@ -19,7 +19,7 @@ class Window {
 
         // base window
         this.window = document.createElement('div');
-        this.window.classList.add('window', 'pop_out', `window_${windowName}`);
+        this.window.classList.add('window', 'pop_out', `window_${this.constructor.CSSNAME}`);
         this.window.style.top = random_range(10, 40) + 'vh';
         this.window.style.left = random_range(20, 40) + 'vw';
         
@@ -36,7 +36,7 @@ class Window {
         this.window_title = document.createElement('span');
 
         // window -> titlebar -> title container -> image
-        if (windowIcon !== null) {
+        if (this.windowIcon) {
             this.window_title_image = document.createElement('img');
             this.window_title_image.src = this.windowIcon;
             this.window_title.appendChild(this.window_title_image);
@@ -80,6 +80,10 @@ class Window {
         this.window.style.display = 'flex';
         this.window.focus();
     }
+
+    /////////////////////
+    // Window Dragging //
+    /////////////////////
 
     resetPositions = () => {
         this.#pos1=0;
@@ -127,6 +131,10 @@ class Window {
         this.window.style.left = (this.window.offsetLeft - this.#pos1) + "px";
     }
 
+    ////////////////////
+    // Window Buttons //
+    ////////////////////
+
     makeFocus = () => {
         windowManager.bringWindowToFront(this.zPos);
     }
@@ -146,6 +154,35 @@ class Window {
             this.window.remove();
             windowManager.removeWindow(this.zPos);
         }, 150);
+    }
+
+    //////////////////////
+    // Application Info //
+    //////////////////////
+
+    static icon = null;
+    static appname = 'UndefinedWindow';
+    static appcatagories = [];
+    static description = 'Undefined App!';
+
+    static get ICON() {
+        return this.icon;
+    }
+
+    static get FANCYNAME() {
+        return this.appname;
+    }
+
+    static get CSSNAME() {
+        return this.appname.toLowerCase().replace(' ', '');
+    }
+
+    static get CATAGORIES() {
+        return this.appcatagories;
+    }
+
+    static get DESCRIPTION() {
+        return this.description;
     }
 }
 
@@ -257,12 +294,50 @@ class ResizableWindow extends Window {
 class WindowManager {
 
     constructor() {
-        // this.windowTemplates = {};
+
+        // Create the desktop and start menu (later)
+        this.desktop = document.createElement('div');
+        this.desktop.id = 'desktop';
+
+        // Get the startup sound
+        const StartupSound = new Audio('https://archive.org/download/MicrosoftWindows7StartupSound/Microsoft%20Windows%207%20Startup%20Sound.ogg');
+
+        // Create when document ready
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            document.body.appendChild(this.desktop);
+
+            const loginSpinner = document.createElement('img');
+            loginSpinner.src = 'http://www.rw-designer.com/cursor-view/14456.png';
+            loginSpinner.width = '80';
+            loginSpinner.style = 'object-fit: none';
+
+            const logintext = document.getElementById('logintext');
+            logintext.appendChild(loginSpinner);
+            logintext.innerHTML += 'Welcome';
+
+            // Remove the loading screen when we finish loading & play startup sound!
+            window.addEventListener('load', () => {
+                const loginElement = document.getElementById('login');
+                loginElement.style.animationName = 'login_fadein';
+                
+                StartupSound.play();
+          
+                setTimeout(() => {
+                  loginElement.style.display = 'none';
+                }, 1000)
+            });
+        })
+
+        // Window index is the Z positioning on screen
         this.windowIndex = [];
         this.windowIndexStart = 100;
+
+        // DB of windows
+        this.windowDB = {};
     }
 
-    createWindow = (windowType, initData) => {
+    createWindow = (windowType, initData={}) => {
         const window = new windowType(initData, this.windowIndex.length);
         this.windowIndex.push(window);
         this.refreshWindowOrder();
@@ -274,8 +349,6 @@ class WindowManager {
             w.zPos = i;
             w.window.style.zIndex = index;
         });
-
-        //console.table(this.windowIndex)
 
         // Focus class to top window
         if (this.windowIndex.length !== 0) {
@@ -299,10 +372,61 @@ class WindowManager {
         this.refreshWindowOrder();
     }
 
-    createDesktopIcon = () => {
+    // Register a window (add to desktop)
+    register = (windowType) => {
+
+        // Make sure we aren't adding it again
+        if (this.windowDB[windowType.FANCYNAME])
+            return;
         
+        // Add to windowDB
+        this.windowDB[windowType.FANCYNAME] = windowType;
+
+        // Create desktop icon
+        const desktopIcon = document.createElement('button');
+        desktopIcon.classList.add('desktopicon');
+        desktopIcon.addEventListener('dblclick', () => {this.createWindow(windowType)});
+
+        const icon = document.createElement('img');
+        icon.src = windowType.ICON;
+
+        const title = document.createElement('span');
+        title.textContent = windowType.FANCYNAME;
+
+        desktopIcon.appendChild(icon);
+        desktopIcon.appendChild(title);
+
+        this.desktop.appendChild(desktopIcon);
     }
 
+}
+
+class Personalisation {
+    static docRoot = document.querySelector(':root');
+
+    static getCssVar = (variable) => {
+        return this.docRoot.style.getPropertyValue(variable);
+    }
+
+    static setCssVar = (variable, value) => {
+        this.docRoot.style.setProperty(variable, value);
+    }
+
+    static setWallpaperImg = (url) => {
+        this.setCssVar('--wallpaper', `url(${url})`);
+    }
+
+    static setWallpaperSize = (displayType) => {
+        this.setCssVar('--wallpaper-size', displayType);
+    }
+
+    static setWallpaperPosition = (position) => {
+        this.setCssVar('--wallpaper-position', position);
+    }
+
+    static setWallpaperRepeat = (repeat) => {
+        this.setCssVar('--wallpaper-repeat', repeat ? 'repeat':'no-repeat');
+    }
 }
 
 class FileSystem {

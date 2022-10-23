@@ -2,10 +2,15 @@
 
 class NotepadWindow extends ResizableWindow {
 
+    static icon = 'https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png';
+    static appname = 'Notepad';
+    static appcatagories = ['Word Processor', 'Office', 'Productivity'];
+    static description = 'Simple writing app.';
+
     constructor(initData, zPos) {
 
-        const data = initData.data;
-        super('notepad',  (data.filename !== '' ? `Notepad - ${stripFilePath(data.filename)}` : 'Notepad'), 'https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png', initData.width ?? 650, initData.height ?? 400, zPos);
+        const data = initData.data ?? {filename: ''};
+        super((data.filename !== '' ? `Notepad - ${stripFilePath(data.filename)}` : 'Notepad'), initData.width ?? 650, initData.height ?? 400, zPos);
 
         this.filename = data.filename;
         this.textarea = document.createElement('textarea');
@@ -16,8 +21,13 @@ class NotepadWindow extends ResizableWindow {
 
 class AboutWindow extends Window {
 
+    static icon = 'https://pbs.twimg.com/profile_images/1116640019/windows-7-logo_400x400.png';
+    static appname = 'About Windows';
+    static appcatagories = ['Information'];
+    static description = 'Information about your installation.';
+
     constructor(initData, zPos) {
-        super('about', 'About Windows', null, 500, 420, zPos);
+        super('About Windows', 500, 420, zPos);
 
         // Paragraph 1
         const container = document.createElement('div');
@@ -94,15 +104,20 @@ class AboutWindow extends Window {
 
 class IEWindow extends ResizableWindow {
 
+    static icon = 'https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419';
+    static appname = 'Internet Explorer';
+    static appcatagories = ['Web Browser'];
+    static description = 'The default web browser for Windows 7.';
+
     url = 'https://google.com?igu=1';
     loadSpinner;
     iframe;
 
     constructor(initData, zPos) {
 
-        super('browser', 'Internet Explorer', 'https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419', initData.width ?? 1000, initData.height ?? 600, zPos);
+        super('Internet Explorer', initData.width ?? 1000, initData.height ?? 600, zPos);
         
-        if (initData.data !== undefined)
+        if (initData.data)
             this.url = initData.data.url ?? this.url;
 
         const navBar = document.createElement('div');
@@ -110,7 +125,7 @@ class IEWindow extends ResizableWindow {
         this.urlBox.type = 'text';
         this.urlBox.name = 'url';
         this.urlBox.value = this.url;
-        this.urlBox.classList.add('window_browser_urlbox');
+        this.urlBox.classList.add('window_internetexplorer_urlbox');
 
         const goButton = document.createElement('input');
         goButton.type = 'button';
@@ -125,7 +140,7 @@ class IEWindow extends ResizableWindow {
         });
 
         this.loadSpinner = document.createElement('div');
-        this.loadSpinner.classList.add('window_browser_spinner');
+        this.loadSpinner.classList.add('window_internetexplorer_spinner');
 
         navBar.appendChild(this.urlBox);
         navBar.appendChild(goButton);
@@ -143,3 +158,14 @@ class IEWindow extends ResizableWindow {
 
     }
 }
+
+class ControlPanel extends ResizableWindow {
+
+    static icon = '';
+    static appname = 'Control Panel'
+
+}
+
+windowManager.register(NotepadWindow);
+windowManager.register(AboutWindow);
+windowManager.register(IEWindow);

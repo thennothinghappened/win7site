@@ -4,14 +4,21 @@
   --aero-login-bg: url('https://img.wallpapersafari.com/desktop/1024/576/24/42/3LWMcO.jpg');
   --cursor-spinner: url('http://www.rw-designer.com/cursor-view/14456.png');
   --window-border: 2px solid grey;
+
+  --wallpaper: url('https://wallpapercave.com/wp/Wn3Dygb.jpg');
+  --wallpaper-size: cover;
+  --wallpaper-position: center;
+  --wallpaper-repeat: repeat;
+  --wallpaper-fallback-colour: black;
 }
 
 body {
   font-family: "Segoe UI", sans-serif;
-  background-image: url('https://wallpapercave.com/wp/Wn3Dygb.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-image: var(--wallpaper);
+  background-size: var(--wallpaper-size);
+  background-position: var(--wallpaper-position);
+  background-repeat: var(--wallpaper-repeat);
+  background-color: var(--wallpaper-fallback-colour);
   min-height: 100vh;
   margin: 0;
   perspective: 1000px;
@@ -58,10 +65,6 @@ body {
   font-size: 15px;
   display: none;
   flex-direction: column;
-}
-
-.window.focuswindow {
-  
 }
 
 .window.windowmaximised {
@@ -268,43 +271,43 @@ hr {
   resize: none;
 }
 
-.window_about > .windowmain > div {
+.window_aboutwindows > .windowmain > div {
   padding: 15px;
 }
 
-.window_about img {
+.window_aboutwindows > .windowmain img {
   width: 65%;
 }
 
-.window_about .window_about_edition {
+.window_aboutwindows .window_about_edition {
   font-size: 30px;
 }
 
-.window_about p {
+.window_aboutwindows p {
   padding-left: 40px;
   padding-right: 40px;
 }
 
-.window_browser .windowmain {
+.window_internetexplorer .windowmain {
   flex-direction: column;
   background: none;
   border: none;
 }
 
-.window_browser .windowmain div {
+.window_internetexplorer .windowmain div {
   display: flex;
   padding: 0 5px 5px 0;
 }
 
-.window_browser_urlbox {
+.window_internetexplorer_urlbox {
   flex-grow: 1;
 }
 
-.window_browser input {
+.window_internetexplorer input {
   border-radius: 0;
 }
 
-.window_browser_spinner {
+.window_internetexplorer_spinner {
   background-image: var(--cursor-spinner);
   background-position: center;
   background-size:170%;
@@ -313,7 +316,7 @@ hr {
   float: right;
 }
 
-.window_browser iframe {
+.window_internetexplorer iframe {
   flex-grow: 1;
   border: none;
   border: var(--window-border);

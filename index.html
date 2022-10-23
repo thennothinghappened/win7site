@@ -5,45 +5,14 @@
   <link rel="stylesheet" href="win7.css">
   <script src="windows.js"></script>
   <script src="windows_apps.js"></script>
-  <script>
-    // Load
-    const StartupSound = new Audio('https://archive.org/download/MicrosoftWindows7StartupSound/Microsoft%20Windows%207%20Startup%20Sound.ogg');
-    
-    window.addEventListener('load', () => {
-      const loginElement = document.getElementById('login');
-      loginElement.style.animationName = 'login_fadein'
-      StartupSound.play();
-
-      setTimeout(() => {
-        loginElement.style.display = 'none';
-      }, 1000)
-    });
-
-    
-  </script>
 </head>
 <body>
 
   <div id="login">
-    <div>
-      <img src="http://www.rw-designer.com/cursor-view/14456.png" width="80" style="object-fit: none">
-      Welcome
-      <noscript><p>Hey, it looks like you don't have javascript. This site completely relies on it, so it won't be able to run!</p></noscript>
+    <div id="logintext">
+      <noscript><p>Hey, it looks like you don't have javascript. This site completely relies on it, so it won't be able to run!</p><p>Please enable JS!</p></noscript>
     </div>
   </div>
-
-	<button class="desktopicon" ondblclick="windowManager.createWindow(NotepadWindow, {data: {filename: '', text: ''}})">
-		<img src="https://www.file-extensions.org/imgs/app-icon/128/759/microsoft-windows-notepad-icon.png">
-		<span>Notepad</span>
-	</button>
-	<button class="desktopicon" ondblclick="windowManager.createWindow(AboutWindow)">
-		<img src="https://pbs.twimg.com/profile_images/1116640019/windows-7-logo_400x400.png">
-		<span>About Windows</span>
-	</button>
-  <button class="desktopicon" ondblclick="windowManager.createWindow(IEWindow, {})">
-		<img src="https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419">
-		<span>Internet Explorer</span>
-	</button>
 
 </body>
 </html>

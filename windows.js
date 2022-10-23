@@ -1,5 +1,5 @@
 // Window
-class Window {
+class BaseWindow {
 
     #pos1;
     #pos2;
@@ -186,7 +186,7 @@ class Window {
     }
 }
 
-class ResizableWindow extends Window {
+class ResizableWindow extends BaseWindow {
     
     resizeX;
     resizeY;
@@ -333,8 +333,6 @@ class WindowManager {
         this.windowIndex = [];
         this.windowIndexStart = 100;
 
-        // DB of windows
-        this.windowDB = {};
     }
 
     createWindow = (windowType, initData={}) => {
@@ -372,17 +370,7 @@ class WindowManager {
         this.refreshWindowOrder();
     }
 
-    // Register a window (add to desktop)
-    register = (windowType) => {
-
-        // Make sure we aren't adding it again
-        if (this.windowDB[windowType.FANCYNAME])
-            return;
-        
-        // Add to windowDB
-        this.windowDB[windowType.FANCYNAME] = windowType;
-
-        // Create desktop icon
+    /*createDesktopIcon = (icon, title, callback) => {
         const desktopIcon = document.createElement('button');
         desktopIcon.classList.add('desktopicon');
         desktopIcon.addEventListener('dblclick', () => {this.createWindow(windowType)});
@@ -398,6 +386,20 @@ class WindowManager {
 
         this.desktop.appendChild(desktopIcon);
     }
+
+    // Register a window (add to desktop)
+    installApp = (windowType) => {
+
+        // Make sure we aren't adding it again
+        if (this.windowDB[windowType.FANCYNAME])
+            return;
+        
+        // Add to windowDB
+        this.windowDB[windowType.FANCYNAME] = windowType;
+
+        // Create desktop shortcut
+        this.createDesktopIcon(windowType.ICON, windowType.FANCYNAME, windowType);
+    }*/
 
 }
 
@@ -429,18 +431,202 @@ class Personalisation {
     }
 }
 
-class FileSystem {
-
-    constructor() {
-
-        localStorage.setItem();
-    }
-
-    getSize = () => {
-        return new Blob(Object.values(localStorage)).size;
+// Simple file class for new files
+class FileNode {
+    constructor(data, metadata={}) {
+        this.data = data;
+        this.metadata = metadata;
     }
 }
 
+class FileSystem {
+
+    #defaultUser = {
+        'Desktop': {},
+        'Documents': {},
+        'AppData': {
+            'Roaming': {},
+            'LocalLow': {},
+            'Local': {}
+        }
+    };
+
+    #default_HKEY_LOCAL_MACHINE = {
+        SOFTWARE: new FileNode({
+            Microsoft: {
+                Windows: {
+                    CurrentVersion: {
+                        Uninstall: {}
+                    }
+                }
+            }
+        }),
+        SYSTEM: new FileNode({
+            CurrentControlSet: {
+                Control: {
+                    'Session Manager': {
+                        Environment: {}
+                    }
+                }
+            }
+        })
+    };
+
+    #default_HKEY_USERS = {
+        Environment: {}
+    };
+
+    #defaultDrive = {
+        'Program Files': {},
+        'Windows': {
+            'System32': {
+                'config': this.#default_HKEY_LOCAL_MACHINE
+            },
+            'Profiles': {
+                'DefaultUser': this.#default_HKEY_USERS
+            }
+        },
+        'Users': {
+            'DefaultUser': this.#defaultUser
+        }
+    };
+
+    // Make sure localStorage is ready to go
+    constructor() {
+
+        let folders_need_check = true;
+
+        // Format the drive for windows if it is empty (run installer!)
+        if (!localStorage.getItem('d')) {
+            // Drive doesn't exist...
+            this.formatFS();
+            // We don't need to re-check folder integrity.
+            folders_need_check = false;
+        }
+
+        // Maintain a mirrored copy of the drive for easier access
+        this.drive = this.getDrive();
+
+        // Check folders...
+        if (folders_need_check) {
+            if (check_contains_keys(this.#defaultDrive, this.drive)) {
+                console.log('Folder check passed.')
+            } else {
+                console.log('Folder check failed, appending missing...')
+                this.drive = append_missing_keys(this.#defaultDrive, this.drive);
+                this.saveDrive();
+            }
+        }
+        
+        console.log(this.fancyDriveSize());
+    }
+
+    // Remake the filesystem from scratch (throws away all data!!)
+    formatFS = () => {
+        this.drive = this.#defaultDrive;
+
+        localStorage.setItem('d', JSON.stringify(this.drive));
+    }
+
+    /** Create new user */
+    createUser = (name) => {
+        if (this.drive['Users'][name]) 
+            return false;
+        
+        this.drive['Users'][name] = this.#defaultUser;
+    }
+
+    /** Get the current drive state */ 
+    getDrive = () => {
+        return JSON.parse(localStorage.getItem('d'));
+    }
+
+    /** Save the drive state (bad, but good enough...) */
+    saveDrive = () => {
+        localStorage.setItem('d', JSON.stringify(this.drive));
+    }
+
+    /** Get the size of the drive in bytes */
+    getDriveSize = () => {
+        return new Blob(Object.values(localStorage)).size;
+    }
+
+    fancyDriveSize = () => {
+        return `Drive size: ${Math.round(this.getDriveSize()/1024*100)/100}kb used of 5mb`;
+    }
+
+    /** Get a Node from a filepath */
+    getNode = (path) => {
+        if (!this.checkFileExists(path)) 
+            return false;
+        
+        return getNestedValue(this.drive, path, '\\');
+    }
+
+    /** Check Node exists */
+    checkNodeExists = (path) => {
+        return (getNestedValue(this.drive, path, '\\') !== undefined);
+    }
+
+    /** Set a Node at a filepath */
+    setNode = (path, node) => {
+        setNestedValue(this.drive, path, '\\', node);
+    }
+
+    /** Get a key from the registry */
+    getRegistryKey = (hive, key) => {
+        return getNestedValue(this.drive.Windows.system32.config[hive].data, key, '\\');
+    }
+
+    /** Set a key in the registry */
+    setRegistryKey = (hive, key, value) => {
+        setNestedValue(this.drive.Windows.system32.config[hive].data, key, '\\', value);
+    }
+
+    /** Install an application from its window class */
+    installApp = (app) => {
+        // ""windows installer"" :p
+        const applistKey = 'Microsoft\\Windows\\CurrentVersion\\Uninstall';
+        const applist = this.getRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', applistKey);
+
+        // Check if app already installed
+        if (applist[app.FANCYNAME] !== undefined) { 
+            return false;
+        }
+
+        // Install the app...
+        this.setRegistryKey('SOFTWARE', applistKey+'\\'+app.FANCYNAME, {
+            InstallDate: new Date(),
+        });
+
+        // Create the Program Files folder for it
+        const appFolder = {};
+        appFolder[app.CSSNAME + '.exe'] = new FileNode(`windowManager.createWindow(${app.name}, initData);`);
+
+        this.setNode('Program Files\\' + app.FANCYNAME, appFolder);
+
+        // Create the desktop shortcut
+        this.drive.Users.DefaultUser.Desktop[app.FANCYNAME + '.lnk'] = new FileNode(`Program Files\\${app.FANCYNAME}\\${app.CSSNAME}.exe`);
+
+        // Save changes to disk
+        this.saveDrive();
+
+        return true;
+    }
+
+    /** Get the app associated with a filetype.
+     * If there is none, prompt the user. */
+    getProgramForFileExtension = (extension) => {
+        const associations = this.getRegistryKey('')
+    }
+
+    /** Open a file */
+    openFile = (path) => {
+
+    }
+}
+
+const fileSystem = new FileSystem();
 const windowManager = new WindowManager();
 
 // Override behaviour of some elements
@@ -483,4 +669,47 @@ function stripFilePath(filename) {
 function random_range(min, max) {
     const maximum = max - min;
     return Math.floor(Math.random() * maximum) + min;
+}
+
+// Make sure an object has the same keys as a base to compare with
+function check_contains_keys(base, test) {
+    // https://stackoverflow.com/questions/33814687/best-way-to-check-a-javascript-object-has-all-the-keys-of-another-javascript-obj
+    return Object.keys(base).every((key) => {
+        return Object.prototype.hasOwnProperty.call(test, key);
+    });
+}
+
+// Append missing keys from base object
+function append_missing_keys(base, test) {
+    Object.keys(base).forEach((key) => {
+        // If property is missing...
+        if (!Object.prototype.hasOwnProperty.call(test, key)) {
+            test[key] = base[key];
+        }
+    });
+
+    return test;
+}
+
+// Get a nested key from a string!
+// https://stackoverflow.com/questions/34257474/how-to-get-the-value-of-nested-javascript-object-property-by-string-key
+function getNestedValue(obj, key, splitter='.') {
+    return key.split(splitter).reduce((result, k) => {
+       return result[k] 
+    }, obj);
+}
+
+// Set a nested key from a string!
+// https://dirask.com/posts/JavaScript-set-a-value-of-nested-key-string-descriptor-inside-an-object-DlAzWp
+function setNestedValue(obj, key, splitter='.', value) {
+    const path = key.split(splitter);
+    const limit = path.length - 1;
+
+    for (let i = 0; i < limit; ++i) {
+        const name = path[i];
+        obj = obj[name] || (obj[name] == {});
+    }
+
+    const name = path[limit];
+    obj[name] = value;
 }

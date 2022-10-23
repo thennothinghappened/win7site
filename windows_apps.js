@@ -19,7 +19,7 @@ class NotepadWindow extends ResizableWindow {
     }
 }
 
-class AboutWindow extends Window {
+class AboutWindow extends BaseWindow {
 
     static icon = 'https://pbs.twimg.com/profile_images/1116640019/windows-7-logo_400x400.png';
     static appname = 'About Windows';
@@ -159,13 +159,29 @@ class IEWindow extends ResizableWindow {
     }
 }
 
-class ControlPanel extends ResizableWindow {
+class ExplorerWindow extends ResizableWindow {
 
-    static icon = '';
-    static appname = 'Control Panel'
+    static icon = null;
+    static appname = 'Windows Explorer';
+    static appcatagories = [];
+    static description = 'Folder viewer tool';
+
+    constructor(initData, zPos) {
+
+        super('Windows Explorer', initData.width ?? 650, initData.height ?? 400, zPos);
+        
+    }
 
 }
 
-windowManager.register(NotepadWindow);
-windowManager.register(AboutWindow);
-windowManager.register(IEWindow);
+class ControlPanel extends ResizableWindow {
+
+    static icon = '';
+    static appname = 'Control Panel';
+
+}
+
+fileSystem.installApp(ExplorerWindow);
+fileSystem.installApp(NotepadWindow);
+fileSystem.installApp(AboutWindow);
+fileSystem.installApp(IEWindow);

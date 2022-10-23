@@ -80,6 +80,7 @@ body {
 
 .pop_out {
   animation: pop_out 0.15s;
+  display: none;
 }
 
 .pop_in {

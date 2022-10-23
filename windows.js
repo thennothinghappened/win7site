@@ -323,6 +323,7 @@ class WindowManager {
                 loginElement.style.animationName = 'login_fadein';
                 
                 StartupSound.play();
+                Personalisation.loadWallpaper();
           
                 setTimeout(() => {
                   loginElement.style.display = 'none';
@@ -378,6 +379,16 @@ class Personalisation {
     static defaultFileIcon = 'https://64.media.tumblr.com/ecebabec49b20582e38d37d22da38a10/5eebb6709b3b0f53-cc/s540x810/821ebf28566545369c64b31a33607b940f8c0b53.png';
     static docRoot = document.querySelector(':root');
 
+    static loadWallpaper = () => {
+        const wD = fileSystem.getRegistryKey('HKEY_CURRENT_USER', 'SOFTWARE', 'Microsoft\\Windows\\CurrentVersion\\Policies\\System\\Wallpaper');
+        
+        this.setWallpaperImg(wD.url);
+        this.setWallpaperSize(wD.size);
+        this.setWallpaperPosition(wD.position);
+        this.setWallpaperRepeat(wD.repeat);
+        this.setWallpaperFallbackColour(wD.fallbackColour);
+    }
+
     static getCssVar = (variable) => {
         return this.docRoot.style.getPropertyValue(variable);
     }
@@ -387,7 +398,7 @@ class Personalisation {
     }
 
     static setWallpaperImg = (url) => {
-        this.setCssVar('--wallpaper', `url(${url})`);
+        this.setCssVar('--wallpaper', `${url}`);
     }
 
     static setWallpaperSize = (displayType) => {
@@ -400,6 +411,20 @@ class Personalisation {
 
     static setWallpaperRepeat = (repeat) => {
         this.setCssVar('--wallpaper-repeat', repeat ? 'repeat':'no-repeat');
+    }
+
+    static setWallpaperFallbackColour = (colour) => {
+        this.setCssVar('--wallpaper-fallback-colour', colour);
+    }
+
+    static saveWallpaper = () => {
+        fileSystem.setRegistryKey('HKEY_CURRENT_USER', 'SOFTWARE', 'Microsoft\\Windows\\CurrentVersion\\Policies\\System\\Wallpaper', {
+            url: this.getCssVar('--wallpaper'),
+            size: this.getCssVar('--wallpaper-size'),
+            position: this.getCssVar('--wallpaper-position'),
+            repeat: this.getCssVar('--wallpaper-repeat') == 'repeat' ? true : false,
+            fallbackColour: this.getCssVar('--wallpaper-fallback-colour')
+        });
     }
 }
 
@@ -455,6 +480,17 @@ class FileSystem {
                     CurrentVersion: {
                         Explorer: {
                             FileExts: {}
+                        },
+                        Policies: {
+                            System: {
+                                Wallpaper: {
+                                    url: 'url(\'https://wallpapercave.com/wp/Wn3Dygb.jpg\')',
+                                    size: 'cover',
+                                    position: 'center',
+                                    repeat: true,
+                                    fallbackColour: 'black'
+                                },
+                            }
                         }
                     }
                 }
@@ -597,6 +633,7 @@ class FileSystem {
     /** Set a key in the registry */
     setRegistryKey = (hkeyName, hive, key, value) => {
         setNestedValue(this.getHkey(hkeyName)[hive].data, key, '\\', value);
+        this.saveDrive();
     }
 
     /** Install an application from its window class */

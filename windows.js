@@ -436,6 +436,19 @@ class FileNode {
     }
 }
 
+class InstallerFile extends FileNode {
+    constructor(name, assets, installerAssets) {
+        super(
+            {
+                name: name,
+                assets: assets,
+                installerAssets: installerAssets
+            },
+            
+        );
+    }
+}
+
 class FileSystem {
 
     #defaultUser = {
@@ -551,7 +564,7 @@ class FileSystem {
 
         const desktopNode = this.getNode(`Users\\${this.CurrentUser}\\Desktop`);
         Object.keys(desktopNode).forEach((node) => {
-            this.createDesktopIcon(node, desktopNode[node].metadata.icon);
+            this.createDesktopIcon(node, desktopNode[node]?.metadata?.icon ?? Personalisation.defaultFileIcon);
         });
 
         console.log(this.fancyDriveSize());
@@ -602,7 +615,7 @@ class FileSystem {
 
         // Files always contain a member called metadata.
         // We know it is a folder if it doesn't (yes, that means 'metadata' is a disallowed filename)
-        if (node.metadata === undefined) return true;
+        if (node && node?.metadata === undefined) return true;
         return false;
     }
 
@@ -614,6 +627,23 @@ class FileSystem {
     /** Set a Node at a filepath */
     setNode = (path, node) => {
         setNestedValue(this.drive, path, '\\', node);
+    }
+
+    /** Save a file */
+    saveFile = (path, file, overwrite_prompt=true) => {
+        
+        // Don't overwrite a folder.
+        if (this.nodeIsFolder(path)) {
+            return false;
+        }
+
+        // Check if we want to overwrite it
+        if (overwrite_prompt && this.checkNodeExists(path)) {
+            // TODO Overwrite prompt
+        }
+
+        this.setNode(path, file);
+        return true;
     }
 
     getHkey = (hkeyName) => {
@@ -696,7 +726,7 @@ class FileSystem {
 
     /** Get the default file extension icon */
     getFileExtensionIcon = (fileExtension) => {
-        return this.getFileExtension(fileExtension).icon;
+        return this.getFileExtension(fileExtension)?.icon;
     }
 
     /** Create a file extension entry if it doesn't exist */

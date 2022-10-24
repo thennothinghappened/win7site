@@ -11,18 +11,73 @@ class NotepadWindow extends ResizableWindow {
     constructor(initData, zPos) {
 
         const data = initData.data ?? {path: ''};
-        super((data.path !== '' ? `Notepad - ${stripFilePath(data.path)}` : 'Notepad'), initData.width ?? 650, initData.height ?? 400, zPos);
+        super('Notepad', initData.width ?? 650, initData.height ?? 400, zPos);
 
-        this.filename = data.path;
         this.textarea = document.createElement('textarea');
-        this.textarea.textContent = data.text;
         this.window_contents.appendChild(this.textarea);
-        this.openFile();
+        this.file = new FileNode('');
+
+        if (data.path !== '')
+            this.openFile(data.path);
     }
 
-    openFile = () => {
-        const content = fileSystem.getNode(this.filename).data;
-        this.textarea.textContent = typeof content === String ? content : JSON.stringify(content);
+    getNotepadName = (path) => {
+        return (path !== '' ? `Notepad - ${stripFilePath(path)}` : 'Notepad');
+    }
+
+    setNotepadName = (filename) => {
+        this.window_title.textContent = this.getNotepadName(filename);
+    }
+
+    openFile = (filename) => {
+
+        this.filename = filename;
+        const newFile = fileSystem.getNode(this.filename);
+
+        if (newFile === undefined || fileSystem.nodeIsFolder(this.filename)) {
+            // File doesnt exist or is a folder
+            return false;
+        }
+
+        this.file = newFile;
+        this.dataType = typeof this.file.data;
+        this.textarea.value = this.dataType === 'string' ? this.file.data : JSON.stringify(this.file.data);
+        this.setNotepadName(filename);
+
+        return true;
+    }
+
+    saveFile = (filename=this.filename) => {
+        // Save the file to a node
+
+        let changing_file = false;
+        if (this.filename !== filename) {
+            // Changing file
+            this.filename = filename;
+            changing_file = true;
+
+        }
+
+        // if a string file, save directly, else assume its json.
+        if (this.dataType === 'string')
+            this.file.data = this.textarea.value;
+        else {
+            try {
+                const newContent = JSON.parse(this.textarea.value);
+                this.file.data = newContent;
+            } catch (e) {
+                // failed to parse, do not save.
+                console.error('Failed to parse JSON for saving with notepad:', e);
+                return false;
+            }
+        }
+
+        if (changing_file)
+            this.setNotepadName(this.filename);
+
+        fileSystem.saveFile(this.filename, this.file);
+        fileSystem.saveDrive();
+        return true;
     }
 }
 

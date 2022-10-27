@@ -241,6 +241,7 @@ class ExplorerWindow extends ResizableWindow {
         this.navBar.classList.add('window_windowsexplorer_navbar');
 
         this.urlBox = document.createElement('input');
+        this.urlBox.readOnly = true;
         this.goUpBox = document.createElement('button');
         this.goUpBox.textContent = '^';
         this.goUpBox.addEventListener('click', this.goUp);

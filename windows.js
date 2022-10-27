@@ -338,9 +338,13 @@ class WindowManager {
     }
 
     createWindow = (windowType, initData={}) => {
-        const window = new windowType(initData, this.windowIndex.length);
-        this.windowIndex.push(window);
-        this.refreshWindowOrder();
+        try {
+            const window = new windowType(initData, this.windowIndex.length);
+            this.windowIndex.push(window);
+            this.refreshWindowOrder();
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     refreshWindowOrder = () => {
@@ -377,6 +381,7 @@ class WindowManager {
 class Personalisation {
     // ill fix it later
     static defaultFileIcon = 'https://64.media.tumblr.com/ecebabec49b20582e38d37d22da38a10/5eebb6709b3b0f53-cc/s540x810/821ebf28566545369c64b31a33607b940f8c0b53.png';
+    static defaultFolderIcon = 'https://icons.iconarchive.com/icons/visualpharm/must-have/256/Folder-icon.png';
     static docRoot = document.querySelector(':root');
 
     static loadWallpaper = () => {
@@ -430,9 +435,20 @@ class Personalisation {
 
 // Simple file class for new files
 class FileNode {
+
+    static METADATA_PROPS = {
+        icon: {fancyName: 'Icon'},
+        dateModified: {fancyName: 'Date modified', readProp: (d) => {
+            const date = new Date(d);
+            return date.getDay() + '/' + date.getMonth() + '/' + date.getFullYear() + ' ' + date.getHours() + ':' + date.getMinutes();
+        }}
+    };
+
     constructor(data, metadata={}) {
         this.data = data;
         this.metadata = metadata;
+        if (this.metadata?.dateModified === undefined)
+            this.metadata.dateModified = new Date();
     }
 }
 
@@ -611,6 +627,17 @@ class FileSystem {
         return getNestedValue(this.drive, path, '\\');
     }
 
+    /** Get the name of a node from a filepath */
+    getNodeName = (path) => {
+        const lastPosBackslash = path.lastIndexOf('\\');
+
+        // Deal with top level...
+        if (lastPosBackslash === -1) return path;
+
+        return path.slice(lastPosBackslash+1);
+
+    }
+
     /** Check if a node is a folder */
     nodeIsFolder = (path) => {
         const node = this.getNode(path);
@@ -712,6 +739,17 @@ class FileSystem {
         }
 
         return this.getRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', extPath);
+    }
+
+    /** Get the file extension name from a path */
+    getFileExtensionName = (path) => {
+        const filename = this.getNodeName(path);
+        const extPos = filename.lastIndexOf('.');
+
+        // Deal with no extension
+        if (extPos === -1) return '';
+
+        return filename.slice(extPos+1);
     }
 
     /** Get the app associated with a filetype.
@@ -845,6 +883,21 @@ class FileSystem {
         }
 
         return true;
+    }
+
+    /** Get the icon for a file or folder from its path */
+    getNodeIcon = (path) => {
+        if (this.nodeIsFolder(path))
+            return Personalisation.defaultFolderIcon;
+        
+        const node = this.getNode(path);
+        if (path.indexOf('.') !== -1)
+            // Get the node's icon, fallback default extension icon, fallback default icon.
+            return node.metadata?.icon ?? this.getFileExtensionIcon(ext) ?? Personalisation.defaultFileIcon;
+        else
+            // Default fallback icon
+            return Personalisation.defaultFileIcon;
+        
     }
 
     /** Create a desktop icon */

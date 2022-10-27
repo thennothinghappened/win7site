@@ -175,13 +175,13 @@ ul {
 	font-size: 15px;
 }
 
-.dialogbutton {
+.dialogbutton, tbody>tr:hover {
   width: 83px;
   height: 20px;
   padding: 0;
   color: black;
   background: linear-gradient(0deg, rgba(169,209,233,1) 0%, rgba(196,230,245,1) 49%, rgba(238,245,251,1) 59%, rgba(248,252,255,1) 100%);
-  
+  user-select: none;
 }
 
 .dialogbutton:hover, .dialogbutton:focus {
@@ -303,20 +303,13 @@ hr {
 
 .window_windowsexplorer_main {
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .window_internetexplorer .windowmain div, .window_windowsexplorer .window_windowsexplorer_navbar {
   display: flex;
   padding: 0 5px 5px 0;
-}
-
-.window_windowsexplorer_dirlist {
-  display: flex;
-  flex-direction: column;
-}
-
-.window_windowsexplorer_dirlist button {
-  
 }
 
 .window_internetexplorer input, .window_windowsexplorer_navbar input {
@@ -344,4 +337,13 @@ hr {
   cursor: wait;
   transition: 0.7s;
   filter:contrast(0.2) brightness(1.5);
+}
+th {
+  border-left: 1px solid black;
+}
+table {
+  border-spacing: 0;
+}
+td {
+  padding: 5px;
 }

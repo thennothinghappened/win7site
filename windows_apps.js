@@ -229,6 +229,7 @@ class ExplorerWindow extends ResizableWindow {
     static fileassociations = ['.htm', '.html'];
 
     url = '';
+    columns = ['icon', 'name', 'dateModified'];
 
     constructor(initData, zPos) {
 
@@ -237,84 +238,141 @@ class ExplorerWindow extends ResizableWindow {
         this.main = document.createElement('div');
         this.main.classList.add('window_windowsexplorer_main');
 
+        // Navbar
         this.navBar = document.createElement('nav');
         this.navBar.classList.add('window_windowsexplorer_navbar');
 
+        // navbar > URL box for seeing current dir
         this.urlBox = document.createElement('input');
         this.urlBox.readOnly = true;
+
+        // navbar > Go to previous directory
         this.goUpBox = document.createElement('button');
         this.goUpBox.textContent = '^';
         this.goUpBox.addEventListener('click', this.goUp);
 
-        this.dirListing = document.createElement('div');
-        this.dirListing.classList.add('window_windowsexplorer_dirlist');
+        // Create the directory list
+        this.dirListingContainer = document.createElement('table');
+        this.dirListingContainer.classList.add('window_windowsexplorer_dirlist');
+
+        // Create dirlist header
+        this.dirListingHeader = document.createElement('thead');
+
+        // Create dirlist contents
+        this.dirListing = document.createElement('tbody');
+
+        // Add them both as children of the dirlist container
+        this.dirListingContainer.appendChild(this.dirListingHeader);
+        this.dirListingContainer.appendChild(this.dirListing);
 
         this.navBar.appendChild(this.urlBox);
         this.navBar.appendChild(this.goUpBox);
         this.main.appendChild(this.navBar);
-        this.main.appendChild(this.dirListing);
+        this.main.appendChild(this.dirListingContainer);
         this.window_contents.appendChild(this.main);
 
         this.updateDirList();
+        
+    }
+
+    createDirList = (nodes={}) => {
+        // Reset dirlist
+        this.dirListingHeader.innerHTML = '';
+        this.dirListing.innerHTML = '';
+
+        // Add header row
+        const dir_list_header = document.createElement('tr');
+
+        // Header > create column for each
+        this.columns.forEach(column => {
+            let fancy_name = FileNode.METADATA_PROPS[column]?.fancyName ?? column;
+
+            // If the column is the name prop, it isn't found in metadata.
+            if (column === 'name')
+                fancy_name = 'Name';
+
+            const new_column = document.createElement('th');
+            new_column.textContent = fancy_name;
+            dir_list_header.appendChild(new_column);
+
+            return;
+        });
+
+        this.dirListingHeader.appendChild(dir_list_header);
+
+        // Body > create file list
+        Object.keys(nodes).forEach(key => {
+            const url = this.url + '\\' + key;
+            const node_is_folder = fileSystem.nodeIsFolder(url);
+            const new_row = document.createElement('tr');
+
+            this.columns.forEach(column => {
+                const new_column = document.createElement('td');
+                
+                switch (column) {
+
+                    case 'name':
+                        new_column.textContent = key;
+                        break;
+
+                    case 'icon':
+                        const icon = document.createElement('img');
+                        icon.src = fileSystem.getNodeIcon(url);
+                        icon.style.height = '20px';
+                        new_column.appendChild(icon);
+                        new_column.style.textAlign = 'center';
+
+                        break;
+
+                    default:
+                        if (node_is_folder)
+                            break;
+
+                        let prop = nodes[key].metadata[column];
+                        
+                        if (prop !== undefined && FileNode.METADATA_PROPS[column]?.readProp !== undefined)
+                            prop = FileNode.METADATA_PROPS[column]?.readProp(prop);
+
+                        new_column.textContent = prop ?? '';
+                        break;
+                }
+
+                new_row.appendChild(new_column);
+            });
+
+            if (node_is_folder)
+                new_row.addEventListener('dblclick', () => {
+                    this.updateDirList(url);
+                });
+            else
+                new_row.addEventListener('dblclick', () => {
+                    fileSystem.openFile(url);
+                });
+
+            this.dirListing.appendChild(new_row);
+        });
+
+        return true;
     }
 
     goUp = () => {
-        this.url = this.url.slice(0, this.url.lastIndexOf('\\'));
-        this.urlBox.value = this.url;
-        this.updateDirList();
+        this.updateDirList(this.url.slice(0, this.url.lastIndexOf('\\')));
     }
 
-    updateDirList = () => {
-        const list = fileSystem.getNode(this.url);
+    updateDirList = (url=this.url) => {
+        const list = fileSystem.getNode(url);
         if (!list) {
-            return;
+            return false;
         }
 
-        this.dirListing.innerHTML = '';
+        if (url !== this.url) {
+            this.url = url;
+            this.urlBox.value = this.url;
+        }
 
-        Object.keys(list).forEach((key) => {
-            const ext = '.' + key.split('.').pop();
-            const fdata = list[key];
+        this.createDirList(list);
 
-            const node = document.createElement('button');
-            node.style.display = 'flex';
-
-            const icon = document.createElement('img');
-            if (fileSystem.nodeIsFolder(this.url+'\\'+key)) {
-                icon.src = 'https://icons.iconarchive.com/icons/visualpharm/must-have/256/Folder-icon.png';
-            } else {
-                if (key.indexOf('.') !== -1) {
-                    icon.src = fdata.metadata?.icon ?? fileSystem.getFileExtensionIcon(ext) ?? Personalisation.defaultFileIcon;
-                } else {
-                    // Default fallback icon
-                    icon.src = Personalisation.defaultFileIcon;
-                }
-            }
-            icon.style.height = '20px';
-
-            const name = document.createElement('div');
-            name.textContent = key;
-
-            node.appendChild(icon);
-            node.appendChild(name);
-
-            if (fileSystem.nodeIsFolder(this.url+'\\'+key)) {
-                // Enter folder
-                node.addEventListener('dblclick', () => {
-                    this.url += '\\' + key;
-                    this.urlBox.value = this.url;
-
-                    this.updateDirList();
-                });
-            } else {
-                // Open file
-                node.addEventListener('dblclick', () => {
-                    fileSystem.openFile(this.url + '\\' + key);
-                })
-            }
-
-            this.dirListing.appendChild(node);
-        })
+        return true;
     }
 
 }

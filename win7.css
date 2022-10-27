@@ -140,6 +140,17 @@ ul {
   margin-left: 15px;
 }
 
+th {
+  border-left: 1px solid black;
+}
+table {
+  border-spacing: 0;
+  user-select: none;
+}
+td {
+  padding: 5px;
+}
+
 .dialog {
   text-align: right;
 }
@@ -337,13 +348,4 @@ hr {
   cursor: wait;
   transition: 0.7s;
   filter:contrast(0.2) brightness(1.5);
-}
-th {
-  border-left: 1px solid black;
-}
-table {
-  border-spacing: 0;
-}
-td {
-  padding: 5px;
 }

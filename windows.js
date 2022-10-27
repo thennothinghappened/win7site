@@ -671,6 +671,10 @@ class FileSystem {
             // TODO Overwrite prompt
         }
 
+        // Set the modification date
+        file.metadata.dateModified = new Date();
+        console.log(file)
+
         this.setNode(path, file);
         return true;
     }
@@ -893,7 +897,7 @@ class FileSystem {
         const node = this.getNode(path);
         if (path.indexOf('.') !== -1)
             // Get the node's icon, fallback default extension icon, fallback default icon.
-            return node.metadata?.icon ?? this.getFileExtensionIcon(ext) ?? Personalisation.defaultFileIcon;
+            return node.metadata?.icon ?? this.getFileExtensionIcon(this.getFileExtensionName(path)) ?? Personalisation.defaultFileIcon;
         else
             // Default fallback icon
             return Personalisation.defaultFileIcon;

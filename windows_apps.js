@@ -16,6 +16,7 @@ class NotepadWindow extends ResizableWindow {
         this.textarea = document.createElement('textarea');
         this.window_contents.appendChild(this.textarea);
         this.file = new FileNode('');
+        this.dataType = 'string';
 
         if (data.path !== '')
             this.openFile(data.path);

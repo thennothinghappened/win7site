@@ -606,6 +606,8 @@ class FileSystem {
 
     /** Get a Node from a filepath */
     getNode = (path) => {
+        // Make sure we have a path
+        if (path === '') return this.drive;
         return getNestedValue(this.drive, path, '\\');
     }
 
@@ -953,10 +955,10 @@ function getNestedValue(obj, key, splitter='.') {
 
     // Make sure it has a separator anyway
     if (key.indexOf(splitter) === -1)
-        return obj;
+        return obj[key];
     
     // remove leading
-    if (key.startsWith(splitter))
+    while (key.startsWith(splitter))
         key = key.slice(splitter.length);
 
     return key.split(splitter).reduce((result, k) => {
@@ -968,6 +970,16 @@ function getNestedValue(obj, key, splitter='.') {
 // Set a nested key from a string!
 // https://dirask.com/posts/JavaScript-set-a-value-of-nested-key-string-descriptor-inside-an-object-DlAzWp
 function setNestedValue(obj, key, splitter='.', value) {
+
+    // Make sure it has a separator anyway
+    if (key.indexOf(splitter) === -1) {
+        obj[key] = value;
+    }
+
+    // remove leading
+    while (key.startsWith(splitter))
+        key = key.slice(splitter.length);
+
     const path = key.split(splitter);
     const limit = path.length - 1;
 

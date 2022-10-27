@@ -108,7 +108,7 @@ body {
 }
 
 .windowtitle>span {
-	text-shadow: 0 0 10px white,0 0 10px white,0 0 10px white,0 0 10px white, 0 0 10px white;
+	text-shadow: 0 0 10px white,0 0 15px white,0 0 15px white,0 0 15px white, 0 0 15px white;
     vertical-align: middle;
     margin-top: 5px;
     display: inline-block;

@@ -1,11 +1,11 @@
 
 :root {
   --aero-bg: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmsfn.org%2Fboard%2Fuploads%2Fpost-385423-0-61567900-1390053212.png&f=1&nofb=1&ipt=e7392349aba1b7dc1f73b7a71bd3d6dc2233a645567bc4d77a44631d223320c6&ipo=images');
-  --aero-login-bg: url('https://img.wallpapersafari.com/desktop/1024/576/24/42/3LWMcO.jpg');
+  --aero-login-bg: url('./assets/wallpaper-login-default.jpg');
   --cursor-spinner: url('http://www.rw-designer.com/cursor-view/14456.png');
   --window-border: 2px solid grey;
 
-  --wallpaper: url('https://wallpapercave.com/wp/Wn3Dygb.jpg');
+  --wallpaper: url('./assets/wallpaper-default.jpg');
   --wallpaper-size: cover;
   --wallpaper-position: center;
   --wallpaper-repeat: repeat;

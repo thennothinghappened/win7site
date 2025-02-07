@@ -1,5 +1,6 @@
+
 // Window
-class BaseWindow {
+export class BaseWindow {
 
     #pos1;
     #pos2;
@@ -191,7 +192,7 @@ class BaseWindow {
     }
 }
 
-class ResizableWindow extends BaseWindow {
+export class ResizableWindow extends BaseWindow {
     
     resizeX;
     resizeY;
@@ -434,7 +435,7 @@ class Personalisation {
 }
 
 // Simple file class for new files
-class FileNode {
+export class FileNode {
 
     static METADATA_PROPS = {
         icon: {fancyName: 'Icon'},
@@ -857,6 +858,7 @@ class FileSystem {
                     eval(program);
                 } catch (error) {
                     // program failed to execute
+					console.error(`Executable '${path}' failed to execute with exception`, error);
                 }
 
                 break;
@@ -932,25 +934,244 @@ class FileSystem {
 
 }
 
-const fileSystem = new FileSystem();
-const windowManager = new WindowManager();
+export const fileSystem = new FileSystem();
+export const windowManager = new WindowManager();
 
-// Override behaviour of some elements
-document.addEventListener('click', (e) => {
-    e = window.e || e;
+class ExplorerWindow extends ResizableWindow {
 
-    // Open links in internal browser
-    if (e.target.tagName === 'A') {
-        e.preventDefault();
+    static icon = 'https://winaero.com/blog/wp-content/uploads/2016/05/Windows-7-8.1.png';
+    static appname = 'Windows Explorer';
+    static appcatagories = [];
+    static description = 'Folder viewer tool';
+    static fileassociations = ['.htm', '.html'];
+
+    url = '';
+    columns = ['icon', 'name', 'dateModified'];
+
+    constructor(initData, zPos) {
+
+        super('Windows Explorer', initData.width ?? 650, initData.height ?? 400, zPos);
+
+        this.main = document.createElement('div');
+        this.main.classList.add('window_windowsexplorer_main');
+
+        // Navbar
+        this.navBar = document.createElement('nav');
+        this.navBar.classList.add('window_windowsexplorer_navbar');
+
+        // navbar > URL box for seeing current dir
+        this.urlBox = document.createElement('input');
+        this.urlBox.readOnly = true;
+
+        // navbar > Go to previous directory
+        this.goUpBox = document.createElement('button');
+        this.goUpBox.textContent = '^';
+        this.goUpBox.addEventListener('click', this.goUp);
+
+        // Create the directory list
+        this.dirListingContainer = document.createElement('table');
+        this.dirListingContainer.classList.add('window_windowsexplorer_dirlist');
+
+        // Create dirlist header
+        this.dirListingHeader = document.createElement('thead');
+
+        // Create dirlist contents
+        this.dirListing = document.createElement('tbody');
+
+        // Add them both as children of the dirlist container
+        this.dirListingContainer.appendChild(this.dirListingHeader);
+        this.dirListingContainer.appendChild(this.dirListing);
+
+        this.navBar.appendChild(this.urlBox);
+        this.navBar.appendChild(this.goUpBox);
+        this.main.appendChild(this.navBar);
+        this.main.appendChild(this.dirListingContainer);
+        this.window_contents.appendChild(this.main);
+
+        this.updateDirList();
         
-        windowManager.createWindow(IEWindow, {data: {url: e.target.href}});
     }
-});
 
-// Override right click menu
-document.addEventListener('contextmenu', (e) => {
-    e.preventDefault()
-});
+    createDirList = (nodes={}) => {
+        // Reset dirlist
+        this.dirListingHeader.innerHTML = '';
+        this.dirListing.innerHTML = '';
+
+        // Add header row
+        const dir_list_header = document.createElement('tr');
+
+        // Header > create column for each
+        this.columns.forEach(column => {
+            let fancy_name = FileNode.METADATA_PROPS[column]?.fancyName ?? column;
+
+            // If the column is the name prop, it isn't found in metadata.
+            if (column === 'name')
+                fancy_name = 'Name';
+
+            const new_column = document.createElement('th');
+            new_column.textContent = fancy_name;
+            dir_list_header.appendChild(new_column);
+
+            return;
+        });
+
+        this.dirListingHeader.appendChild(dir_list_header);
+
+        // Body > create file list
+        Object.keys(nodes).forEach(key => {
+            const url = this.url + '\\' + key;
+            const node_is_folder = fileSystem.nodeIsFolder(url);
+            const new_row = document.createElement('tr');
+
+            this.columns.forEach(column => {
+                const new_column = document.createElement('td');
+                
+                switch (column) {
+
+                    case 'name':
+                        new_column.textContent = key;
+                        break;
+
+                    case 'icon':
+                        const icon = document.createElement('img');
+                        icon.src = fileSystem.getNodeIcon(url);
+                        icon.style.height = '20px';
+                        new_column.appendChild(icon);
+                        new_column.style.textAlign = 'center';
+
+                        break;
+
+                    default:
+                        if (node_is_folder)
+                            break;
+
+                        let prop = nodes[key].metadata[column];
+                        
+                        if (prop !== undefined && FileNode.METADATA_PROPS[column]?.readProp !== undefined)
+                            prop = FileNode.METADATA_PROPS[column]?.readProp(prop);
+
+                        new_column.textContent = prop ?? '';
+                        break;
+                }
+
+                new_row.appendChild(new_column);
+            });
+
+            if (node_is_folder)
+                new_row.addEventListener('dblclick', () => {
+                    this.updateDirList(url);
+                });
+            else
+                new_row.addEventListener('dblclick', () => {
+                    fileSystem.openFile(url);
+                });
+
+            this.dirListing.appendChild(new_row);
+        });
+
+        return true;
+    }
+
+    goUp = () => {
+        this.updateDirList(this.url.slice(0, this.url.lastIndexOf('\\')));
+    }
+
+    updateDirList = (url=this.url) => {
+        const list = fileSystem.getNode(url);
+        if (!list) {
+            return false;
+        }
+
+        if (url !== this.url) {
+            this.url = url;
+            this.urlBox.value = this.url;
+        }
+
+        this.createDirList(list);
+
+        return true;
+    }
+
+}
+
+class IEWindow extends ResizableWindow {
+
+    static icon = 'https://static.wikia.nocookie.net/logopedia/images/a/a9/Internet_Explorer_logo_2007.svg/revision/latest?cb=20200726002419';
+    static appname = 'Internet Explorer';
+    static appcatagories = ['Web Browser'];
+    static description = 'The default web browser for Windows 7.';
+
+    url = 'https://google.com?igu=1';
+    loadSpinner;
+    iframe;
+
+    constructor(initData, zPos) {
+
+        super('Internet Explorer', initData.width ?? 1000, initData.height ?? 600, zPos);
+        
+        if (initData.data)
+            this.url = initData.data.url ?? this.url;
+
+        const navBar = document.createElement('div');
+        this.urlBox = document.createElement('input');
+        this.urlBox.type = 'text';
+        this.urlBox.name = 'url';
+        this.urlBox.value = this.url;
+        this.urlBox.classList.add('window_internetexplorer_urlbox');
+
+        const goButton = document.createElement('button');
+        goButton.textContent = 'Go';
+        // Go to the new address!
+        goButton.addEventListener('click', () => {
+            this.url = browserUrl(this.urlBox.value);
+            this.urlBox.value = this.url;
+            this.iframe.src = this.url;
+            this.loadSpinner.style.opacity = 1;
+        });
+
+        this.loadSpinner = document.createElement('div');
+        this.loadSpinner.classList.add('window_internetexplorer_spinner');
+
+        navBar.appendChild(this.urlBox);
+        navBar.appendChild(goButton);
+        navBar.appendChild(this.loadSpinner);
+
+        this.iframe = document.createElement('iframe');
+        this.iframe.src = this.url;
+        // Hide the load spinner when page loaded
+        this.iframe.addEventListener('load', () => {
+            this.loadSpinner.style.opacity = 0;
+        });
+
+        this.window_contents.appendChild(navBar);
+        this.window_contents.appendChild(this.iframe);
+
+    }
+}
+
+export function init() {
+
+	// Override behaviour of some elements
+	document.addEventListener('click', (e) => {
+		e = window.e || e;
+
+		// Open links in internal browser
+		if (e.target.tagName === 'A') {
+			e.preventDefault();
+			
+			windowManager.createWindow(IEWindow, {data: {url: e.target.href}});
+		}
+	});
+
+	// Override right click menu
+	document.addEventListener('contextmenu', (e) => {
+		e.preventDefault()
+	});
+
+	fileSystem.installApp(ExplorerWindow);
+	fileSystem.installApp(IEWindow);
+
+}
 
 function trimAndGetUrlScheme(string) {
     const tempStr = string.split('://');
@@ -968,7 +1189,7 @@ function addHttpProtocol(string) {
     return string;
 }
 
-function browserUrl(string) {
+export function browserUrl(string) {
     string = addHttpProtocol(string);
     if (string.indexOf('google.co') !== -1 && string.indexOf('igu=1') === -1) {
         string += (string.indexOf('?') !== -1 ? '&' : '?') + 'igu=1'
@@ -977,7 +1198,7 @@ function browserUrl(string) {
     return string;
 }
 
-function stripFilePath(filename) {
+export function stripFilePath(filename) {
     return filename.split('\\').pop();
 }
 

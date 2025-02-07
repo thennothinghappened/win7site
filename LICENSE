@@ -8,6 +8,9 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 -----
 
-The wallpapers (`./assets/wallpaper-default.jpg`, `./assets/wallpaper-login-default.jpg`) are
-© Microsoft, and as such are NOT licensed under the above MIT license text. These assets have been
-included directly to reduce dependencies on external content distribution sites.
+The assets listed below are © Microsoft, and as such are NOT licensed under the above MIT license
+text. These assets have been included directly to reduce dependencies on external content
+distribution sites:
+
+- `./assets/wallpaper-default.jpg`
+- `./assets/wallpaper-login-default.jpg`

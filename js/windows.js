@@ -311,8 +311,9 @@ class WindowManager {
 
             const loginSpinner = document.createElement('img');
             loginSpinner.src = 'http://www.rw-designer.com/cursor-view/14456.png';
-            loginSpinner.width = '80';
-            loginSpinner.style = 'object-fit: none';
+            loginSpinner.width = 80;
+			loginSpinner.style.objectFit = 'none';
+			loginSpinner.style.verticalAlign = 'middle';
 
             const logintext = document.getElementById('logintext');
             logintext.appendChild(loginSpinner);

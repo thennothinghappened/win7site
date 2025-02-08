@@ -310,14 +310,14 @@ class WindowManager {
             document.body.appendChild(fileSystem.desktop);
 
             const loginSpinner = document.createElement('img');
-            loginSpinner.src = 'http://www.rw-designer.com/cursor-view/14456.png';
+            loginSpinner.src = './assets/cursor-busy.webp';
             loginSpinner.width = 80;
 			loginSpinner.style.objectFit = 'none';
 			loginSpinner.style.verticalAlign = 'middle';
 
             const logintext = document.getElementById('logintext');
             logintext.appendChild(loginSpinner);
-            logintext.innerHTML += 'Welcome';
+            logintext.append('Welcome');
 
             // Remove the loading screen when we finish loading & play startup sound!
             window.addEventListener('load', () => {

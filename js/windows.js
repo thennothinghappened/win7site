@@ -580,11 +580,6 @@ class FileSystem {
         this.desktop = document.createElement('div');
         this.desktop.id = 'desktop';
 
-        const desktopNode = this.getNode(`Users\\${this.CurrentUser}\\Desktop`);
-        Object.keys(desktopNode).forEach((node) => {
-            this.createDesktopIcon(node, desktopNode[node]?.metadata?.icon ?? Personalisation.defaultFileIcon);
-        });
-
         console.log(this.fancyDriveSize());
     }
 
@@ -703,9 +698,20 @@ class FileSystem {
 
     /** Install an application from its window class */
     installApp = (app) => {
+		
         // ""windows installer"" :p
         const applistKey = 'Microsoft\\Windows\\CurrentVersion\\Uninstall';
         const applist = this.getRegistryKey('HKEY_LOCAL_MACHINE', 'SOFTWARE', applistKey);
+		const shortcutFileName = app.FANCYNAME + '.lnk';
+
+		// Create the desktop shortcut if it doesn't exist.
+		if (!(shortcutFileName in this.drive.Users.DefaultUser.Desktop)) {
+			this.drive.Users.DefaultUser.Desktop[shortcutFileName] = new FileNode(`file://Program Files\\${app.FANCYNAME}\\${app.CSSNAME}.exe`, { 
+				icon: app.ICON
+			});
+		}
+
+		this.createDesktopIcon(shortcutFileName, app.ICON ?? Personalisation.defaultFileIcon);
 
         // Check if app already installed
         if (applist[app.FANCYNAME] !== undefined) { 
@@ -722,9 +728,6 @@ class FileSystem {
         appFolder[app.CSSNAME + '.exe'] = new FileNode(`windowManager.createWindow(${app.name}, initData);`, {icon: app.ICON});
 
         this.setNode('Program Files\\' + app.FANCYNAME, appFolder);
-
-        // Create the desktop shortcut
-        this.drive.Users.DefaultUser.Desktop[app.FANCYNAME + '.lnk'] = new FileNode(`file://Program Files\\${app.FANCYNAME}\\${app.CSSNAME}.exe`, {icon: app.ICON});
 
         // Add file associations
         app.ASSOCIATIONS.forEach((fileExtension) => {
@@ -907,7 +910,10 @@ class FileSystem {
         
     }
 
-    /** Create a desktop icon */
+    /** 
+	 * Create a desktop icon with the given name and icon.
+	 * @private
+	 */
     createDesktopIcon = (filename, icon) => {
 
         // Get file extension
@@ -931,6 +937,7 @@ class FileSystem {
         desktopIcon.appendChild(title);
 
         this.desktop.appendChild(desktopIcon);
+		
     }
 
 }

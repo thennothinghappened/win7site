@@ -129,7 +129,7 @@ export class AboutWindow extends BaseWindow {
         const p3 = document.createElement('p');
         p3.textContent = 'This product is licensed under the ';
         const msSoftwareLicenseLink = document.createElement('a');
-        msSoftwareLicenseLink.href = 'http://docs.google.com/gview?url=https://download.microsoft.com/Documents/UseTerms/Windows%207_Ultimate_English_1e53a4ca-c632-4776-90ce-70f027918132.pdf&embedded=true';
+        msSoftwareLicenseLink.href = 'https://docs.google.com/gview?url=https://download.microsoft.com/Documents/UseTerms/Windows%207_Ultimate_English_1e53a4ca-c632-4776-90ce-70f027918132.pdf&embedded=true';
         msSoftwareLicenseLink.innerHTML = 'Microsoft Software License';
         msSoftwareLicenseLink.appendChild(lineBreak);
         msSoftwareLicenseLink.innerHTML += ' Terms';
